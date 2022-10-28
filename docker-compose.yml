@@ -48,5 +48,5 @@ services:
     volumes:
      - ./certbot/conf:/etc/letsencrypt
      - ./certbot/www:/var/www/certbot
-    depends_on:
-     - nginx
+    #command: certonly -v -n --email jmfernandez1@miuandes.cl --agree-tos --webroot -w /var/www/certbot --renew-by-default
+    command: certonly --webroot -w /var/www/certbot --email jmfernandez1@miuandes.cl -d telegrambot.cl --agree-tos

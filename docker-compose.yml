@@ -14,7 +14,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     depends_on:
       - db
-    ports: 
+    ports:
      - 8000:8000
     command: gunicorn telegram_bot.wsgi:application --bind 0.0.0.0:8000
     #command: python manage.py runserver 0.0.0.0:8000
@@ -31,7 +31,7 @@ services:
       - 5432:5432
   nginx:
     build: ./nginx
-    volumes: 
+    volumes:
      - ./telegram_bot:/django_app
      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
      - ./certbot/conf:/etc/letsencrypt
@@ -49,4 +49,4 @@ services:
      - ./certbot/conf:/etc/letsencrypt
      - ./certbot/www:/var/www/certbot
     #command: certonly -v -n --email jmfernandez1@miuandes.cl --agree-tos --webroot -w /var/www/certbot --renew-by-default
-    command: certonly --webroot -w /var/www/certbot --email jmfernandez1@miuandes.cl -d telegrambot.cl --agree-tos
+    command: certonly --webroot -w /var/www/certbot --email jmfernandez1@miuandes.cl -d developmentcl.xyz --agree-tos

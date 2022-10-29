@@ -7,5 +7,4 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 172.19.0.4      0f61f48a7ca2
 127.0.0.1  nginx_telegram_app_server
-127.0.0.1  190.153.137.219
-127.0.0.1  telegrambot.cl
+

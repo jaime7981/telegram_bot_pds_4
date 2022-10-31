@@ -15,7 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from bot_api import views as bot_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('test/', bot_views.test_page, name = 'test_page'),
+    path('webhook/', bot_views.webhook, name = 'webhook'),
+
 ]

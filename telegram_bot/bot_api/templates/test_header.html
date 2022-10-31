@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es-CL">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Telegram Bot</title>
+    </head>
+
+    <body>
+        <header title="top-headbar">
+            <div class="header-container">
+
+            </div>
+        </header>
+
+        <div id="django-message">
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="main-content">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </body>
+</html>

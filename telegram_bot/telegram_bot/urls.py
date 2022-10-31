@@ -28,3 +28,4 @@ urlpatterns = [
 
 # curl -F "url=https://developmentcl.xyz/webhook" https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/setWebhook
 # curl https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/getMe
+# curl https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/getWebhookInfo

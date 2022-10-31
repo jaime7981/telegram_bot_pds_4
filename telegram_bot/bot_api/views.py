@@ -7,6 +7,9 @@ from django.utils.decorators import method_decorator
 import logging, requests, json
 logger = logging.getLogger('django')
 
+bot_commands = ['/start', '/games', '/stats']
+game_list = ['/number', '/trivia', '/custom']
+
 # Create your views here.
 def test_page(request):
     context = {}
@@ -17,16 +20,28 @@ def root(request):
 
 @csrf_exempt
 def webhook(request):
-    logger.info(request)
-    logger.info(request.headers)
-    logger.info(request.body)
+    #logger.info(request)
+    #logger.info(request.headers)
+    #logger.info(request.body)
 
     if request.method == 'POST':
-        logger.info(json.loads(request.body))
         request_data = json.loads(request.body)
+        logger.info(request_data)
         chat_id = request_data['message']['chat']['id']
-        text = request_data['message']['chat']['id']
-        sendMessage(chat_id)
+        text = request_data['message']['text']
+        flag=True
+        for element in text.split():
+            if element in bot_commands:
+                if element == '/start':
+                    sendMessage(chat_id, text='Starting Bot')
+                elif element == '/games':
+                    sendMessage(chat_id, text='\n'.join(game_list))
+                elif element == '/stats':
+                    sendMessage(chat_id, text='To Be Imlpemented: user stats')
+                flag=False
+                break
+        if flag:
+            sendMessage(chat_id, text=str('Unkown command\n' + '\n'.join(game_list)))
         return JsonResponse({'success':'post method working'},status=200)
     elif request.method == 'GET':
         return JsonResponse({'success':'get method working'},status=200)

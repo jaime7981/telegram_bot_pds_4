@@ -23,3 +23,5 @@ urlpatterns = [
     path('webhook/', bot_views.webhook, name = 'webhook'),
 
 ]
+
+# curl -F "url=https://developmentcl.xyz/webhook" https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/setWebhook

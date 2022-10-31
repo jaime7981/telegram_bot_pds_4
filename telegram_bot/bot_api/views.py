@@ -29,6 +29,7 @@ def webhook(request):
         logger.info(request_data)
         message = request_data.get('message')
         text = ''
+        chat_id = 0
         
         if message is not None:
             if message.get('chat').get('id') is not None:

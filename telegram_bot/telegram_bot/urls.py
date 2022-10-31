@@ -16,12 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from bot_api import views as bot_views
+from django.views.generic.base import RedirectView
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('test/', bot_views.test_page, name = 'test_page'),
     path('webhook/', bot_views.webhook, name = 'webhook'),
-
+    path('', bot_views.root, name='webhook-redirect'),
 ]
 
 # curl -F "url=https://developmentcl.xyz/webhook" https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/setWebhook
+# curl https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/getMe

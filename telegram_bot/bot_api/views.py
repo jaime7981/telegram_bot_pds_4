@@ -1,7 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 
-import logging, requests
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+import logging, requests, json
 logger = logging.getLogger('django')
 
 # Create your views here.
@@ -9,18 +12,21 @@ def test_page(request):
     context = {}
     return(render(request, 'test.html', context=context))
 
-
+@csrf_exempt
 def webhook(request):
     logger.info(request)
-    logger.info(request.data)
+    logger.info(request.headers)
+    logger.info(request.body)
 
     if request.method == 'POST':
-        return JsonResponse({'error':'post method not doing anything'},status=204)
+        logger.info(json.loads(request.body))
+        request_data = json.loads(request.body)
+        chat_id = request_data['message']['chat']['id']
+        text = request.message['message']['chat']['id']
+        sendMessage(chat_id)
+        return JsonResponse({'success':'post method working'},status=200)
     elif request.method == 'GET':
         #return HttpResponse(status=200)
-        chat_id = request.data['message']['chat']['id']
-        text = request.data['message']['chat']['id']
-        sendMessage(chat_id)
         return JsonResponse({'success':'get method working'},status=200)
     else:
         return HttpResponseBadRequest()

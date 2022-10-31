@@ -44,13 +44,13 @@ services:
     ports:
      - 80:80
      - 443:443
-  certbot:
-    image: certbot/certbot:latest
-    volumes:
-     - ./certbot/conf:/etc/letsencrypt
-     - ./certbot/www:/var/www/certbot
+  #certbot:
+  #  image: certbot/certbot:latest
+  #  volumes:
+  #   - ./certbot/conf:/etc/letsencrypt
+  #   - ./certbot/www:/var/www/certbot
     #command: certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d developmentcl.xyz
     #command: certbot renew
     #command: certonly -v -n --email jmfernandez1@miuandes.cl --agree-tos --webroot -w /var/www/certbot --renew-by-default
-    command: certonly --webroot -w /var/www/certbot --email jmfernandez1@miuandes.cl -d developmentcl.xyz --renew-by-default --agree-tos
+    #command: certonly --webroot -w /var/www/certbot --email jmfernandez1@miuandes.cl -d developmentcl.xyz --renew-by-default --agree-tos
     #command: certonly --webroot -w /var/www/certbot --email jmfernandez1@miuandes.cl -d developmentcl.xyz --force-renewal --agree-tos

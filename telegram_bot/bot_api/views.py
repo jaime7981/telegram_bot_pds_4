@@ -27,8 +27,15 @@ def webhook(request):
     if request.method == 'POST':
         request_data = json.loads(request.body)
         logger.info(request_data)
-        chat_id = request_data['message']['chat']['id']
-        text = request_data['message']['text']
+        message = request_data.get('message')
+        
+        if message is not None:
+            if message.get('chat').get('id') is not None:
+                chat_id = request_data['message']['chat']['id']
+            else:
+                return JsonResponse({'error':'could not get chat id'},status=400)
+            text = message.get('text', 'could not format text')
+        
         flag=True
         for element in text.split():
             if element in bot_commands:
@@ -41,7 +48,7 @@ def webhook(request):
                 flag=False
                 break
         if flag:
-            sendMessage(chat_id, text=str('Unkown command\n' + '\n'.join(game_list)))
+            sendMessage(chat_id, text=str('Unkown command\n' + '\n'.join(bot_commands)))
         return JsonResponse({'success':'post method working'},status=200)
     elif request.method == 'GET':
         return JsonResponse({'success':'get method working'},status=200)

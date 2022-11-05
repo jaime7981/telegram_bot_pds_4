@@ -1,3 +1,5 @@
+from cmath import log
+from random import randint
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 
@@ -26,31 +28,38 @@ def webhook(request):
 
     if request.method == 'POST':
         request_data = json.loads(request.body)
+        message_to_send = ''
+
         logger.info(request_data)
-        message = request_data.get('message')
-        text = ''
-        chat_id = 0
-        
-        if message is not None:
-            if message.get('chat').get('id') is not None:
-                chat_id = request_data['message']['chat']['id']
+        request_json = formatInfo(request_data)
+
+        text = request_json.get('message_text').split()
+        if len(text) >= 1:
+            command = text[0]
+
+            # Commands for info
+            if command in bot_commands:
+                if command == '/start':
+                    message_to_send = 'Starting Bot'
+                elif command == '/games':
+                    message_to_send = '\n'.join(game_list)
+                elif command == '/stats':
+                    message_to_send = 'To Be Imlpemented: user stats'
+                else:
+                    message_to_send = 'Command Not Implemented'
+            
+            # Commands for games
+            elif command in game_list:
+                if command == '/number':
+                    message_to_send = 'Number Game'
+                    play_number(text)
+                else:
+                    message_to_send = 'Game Not Implemented'
             else:
-                return JsonResponse({'error':'could not get chat id'},status=400)
-            text = message.get('text', 'could not format text')
+                message_to_send = str('Unkown command, try:\n' + '\n'.join(bot_commands))
         
-        flag=True
-        for element in text.split():
-            if element in bot_commands:
-                if element == '/start':
-                    sendMessage(chat_id, text='Starting Bot')
-                elif element == '/games':
-                    sendMessage(chat_id, text='\n'.join(game_list))
-                elif element == '/stats':
-                    sendMessage(chat_id, text='To Be Imlpemented: user stats')
-                flag=False
-                break
-        if flag:
-            sendMessage(chat_id, text=str('Unkown command\n' + '\n'.join(bot_commands)))
+        chat_id = int(request_json.get('chat_id'))
+        sendMessage(chat_id, text=message_to_send)
         return JsonResponse({'success':'post method working'},status=200)
     elif request.method == 'GET':
         return JsonResponse({'success':'get method working'},status=200)
@@ -63,3 +72,42 @@ def sendMessage(chat_id, text='bot response'):
             'text':text}
     request = requests.post(url, json=data)
     return request
+
+
+def play_number(text):
+    logger.info(text)
+
+    # Manage Text Parameters
+    if len(text) == 2:
+        parameter = text[1]
+        number = int(parameter) if parameter.isdigit() else None
+
+        if number == None:
+            return str(number)
+        else:
+            if parameter == 'start':
+                return 'Setting random number between 1 and 100\nNumber: ' + str(randint(1,100))
+            elif parameter == 'restart':
+                return 'Restarting game'
+            else:
+                return 'Unkown Number Game Command'
+    else:
+        return 'Too many parameters'
+
+
+def formatInfo(json_request):
+    formated_json = {}
+    message = json_request.get('message')
+
+    if message is not None:
+        #Skipping checks
+        formated_json['chat_id'] = message.get('chat').get('id')
+        formated_json['chat_type'] = message.get('chat').get('type')
+        formated_json['chat_title'] = message.get('chat').get('title')
+        formated_json['sender_id'] = message.get('from').get('id')
+        formated_json['sender_name'] = message.get('from').get('first_name') + ' ' + message.get('from').get('last_name')
+        formated_json['message_id'] = message.get('id')
+        formated_json['message_date'] = message.get('date')
+        formated_json['message_text'] = message.get('text')
+    return formated_json
+    

@@ -1,0 +1,23 @@
+{
+'update_id': 293049735, 
+'message': {
+    'message_id': 80, 
+    'from': {
+        'id': 5566325487, 
+        'is_bot': False, 
+        'first_name': 'Jaime', 
+        'last_name': 'Fernandez', 
+        'language_code': 'en'}, 
+    'chat': {
+        'id': -724987722, 
+        'title': 'BotTestGroup', 
+        'type': 'group', 
+        'all_members_are_administrators': True}, 
+    'date': 1667605381, 
+    'text': '/start', 
+    'entities': 
+        [{'offset': 0, 
+            'length': 6, 
+            'type': 'bot_command'}]
+    }
+}

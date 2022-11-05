@@ -1,0 +1,19 @@
+{
+'update_id': 293049734, 
+'message': {
+    'message_id': 78, 
+    'from': {
+        'id': 5566325487, 
+        'is_bot': False, 
+        'first_name': 'Jaime', 
+        'last_name': 'Fernandez', 
+        'language_code': 'en'}, 
+    'chat': {
+        'id': 5566325487, 
+        'first_name': 'Jaime', 
+        'last_name': 'Fernandez', 
+        'type': 'private'}, 
+    'date': 1667605143, 
+    'text': 'prueba de bot'
+    }
+}

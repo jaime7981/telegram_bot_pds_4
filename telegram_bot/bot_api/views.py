@@ -40,7 +40,9 @@ def webhook(request):
         logger.info(chat.chat_title)
 
         text = request_json.get('message_text').split()
-        if len(text) >= 1:
+        if text == None:
+            message_to_send = f'Hello {player.user_name}!\nWelcome to {chat.chat_title}'
+        elif len(text) >= 1:
             command = text[0]
 
             # Commands for info
@@ -209,7 +211,7 @@ def formatInfo(json_request):
         
         formated_json['message_id'] = message.get('id')
         formated_json['message_date'] = message.get('date')
-        formated_json['message_text'] = message.get('text')
+        formated_json['message_text'] = message.get('text', None)
     return formated_json
 
 def getPlayerAndChatOrCreate(json_request):

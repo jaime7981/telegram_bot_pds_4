@@ -1,0 +1,35 @@
+{
+'update_id': 293049765,
+'message': {
+    'message_id': 140, 
+    'from': {
+        'id': 5610432666, 
+        'is_bot': False, 
+        'first_name': 'Sebastian', 
+        'last_name': 'Diaz', 
+        'language_code': 'en'}, 
+    'chat': {'id': -724987722, 
+        'title': 'BotTestGroup', 
+        'type': 'group', 
+        'all_members_are_administrators': True}, 
+    'date': 1667678212, 
+    'new_chat_participant': {
+        'id': 5610432666, 
+        'is_bot': False, 
+        'first_name': 'Sebastian', 
+        'last_name': 'Diaz', 
+        'language_code': 'en'}, 
+    'new_chat_member': {
+        'id': 5610432666, 
+        'is_bot': False, 
+        'first_name': 'Sebastian', 
+        'last_name': 'Diaz', 
+        'language_code': 'en'},
+    'new_chat_members': [{
+        'id': 5610432666, 
+        'is_bot': False, 
+        'first_name': 'Sebastian', 
+        'last_name': 'Diaz', 
+        'language_code': 'en'}]
+    }
+}

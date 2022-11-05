@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-from models import Player, Chat, Stats, NumberGame
+from bot_api.models import Player, Chat, Stats, NumberGame
 
 import logging, requests, json
 logger = logging.getLogger('django')
@@ -140,6 +140,8 @@ def getPlayerAndChatOrCreate(json_request):
         player = Player.objects.create(user_id=json_request.get('sender_id'),
                                        user_name=json_request.get('sender_name'))
         player.save()
+        stats = Stats.objects.create(player=player)
+        stats.save()
         chat = Chat.objects.create(player=player,
                                        chat_id=json_request.get('chat_id'),
                                        chat_type=json_request.get('chat_type'),

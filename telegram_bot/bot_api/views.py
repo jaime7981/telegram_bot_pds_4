@@ -52,7 +52,7 @@ def webhook(request):
             elif command in game_list:
                 if command == '/number':
                     message_to_send = 'Number Game'
-                    play_number(text)
+                    message_to_send = play_number(text)
                 else:
                     message_to_send = 'Game Not Implemented'
             else:

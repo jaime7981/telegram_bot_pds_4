@@ -11,7 +11,7 @@ from bot_api.models import Player, Chat, Stats, NumberGame
 import logging, requests, json
 logger = logging.getLogger('django')
 
-bot_commands = ['/start', '/games', '/stats']
+bot_commands = ['/start', '/games', '/stats', '/welcome']
 game_list = ['/number', '/trivia', '/custom']
 
 # Create your views here.
@@ -97,7 +97,7 @@ def play_number(text, player, chat):
                 CreateOrResetNumberGame(chat)
                 return 'Answer set and game Ready to be played\nGO!'
             elif parameter == 'info':
-                return 'TBI: Info'
+                return GetNumberGameParams(chat)
             elif parameter == 'end':
                 return 'TBI: Ending game'
             else:
@@ -109,10 +109,10 @@ def play_number(text, player, chat):
 
         if number != None:
             if parameter == 'set_attemps':
-                SetRulesInNumberGame(max_attempts=number)
+                SetRulesInNumberGame(chat, max_attempts=number)
                 return 'Max attempts setted to ' + str(number)
             elif parameter == 'set_max':
-                SetRulesInNumberGame(max_answer=number)
+                SetRulesInNumberGame(chat, max_answer=number)
                 return 'Max random number setted to ' + str(number)
         else:
             return 'Bad arguments for seting game params'
@@ -191,6 +191,19 @@ def SetRulesInNumberGame(chat, max_answer=None, max_attempts=None):
                 number_game = NumberGame.objects.create(player=chat.player,
                                                         chat=chat)
             number_game.save()
+
+def GetNumberGameParams(chat):
+    # Todas las instancias de player en chat
+    chats = Chat.objects.filter(chat_id=chat.chat_id)
+
+    for chat in chats:
+        number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+        if len(number_game) == 1:
+            number_game = number_game[0]
+            return  f'Attempts: {number_game.rule_attempts}\nMax Number: {number_game.rule_highest}'
+        else:
+            return 'Error when requesting info params'
+    
 
 def formatInfo(json_request):
     formated_json = {}

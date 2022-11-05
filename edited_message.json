@@ -1,0 +1,24 @@
+{
+'update_id': 293049780, 
+'edited_message': {
+    'message_id': 168, 
+    'from': {
+        'id': 5566325487, 
+        'is_bot': False, 
+        'first_name': 'Jaime', 
+        'last_name': 'Fernandez', 
+        'language_code': 'en'}, 
+    'chat': {
+        'id': -724987722, 
+        'title': 'BotTestGroup', 
+        'type': 'group', 
+        'all_members_are_administrators': True}, 
+    'date': 1667681632, 
+    'edit_date': 1667681642, 
+    'text': '/number info', 
+    'entities': [{
+        'offset': 0, 
+        'length': 7, 
+        'type': 'bot_command'}]
+    }
+}

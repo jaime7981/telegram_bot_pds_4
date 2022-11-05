@@ -213,6 +213,8 @@ def GetNumberGameParams(chat):
 def formatInfo(json_request):
     formated_json = {}
     message = json_request.get('message')
+    if message == None:
+        message = json_request.get('edited_message')
 
     if message is not None:
         #Skipping checks

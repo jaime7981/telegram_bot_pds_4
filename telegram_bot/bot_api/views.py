@@ -36,6 +36,11 @@ def webhook(request):
         request_json = formatInfo(request_data)
 
         player, chat = getPlayerAndChatOrCreate(request_json)
+        if player == None or chat == None:
+            chat_id = int(request_json.get('chat_id'))
+            sendMessage(chat_id, text='Error getting the player or the chat')
+            return JsonResponse({'success':'post method working'},status=200)
+        
         logger.info(player.user_name)
         logger.info(chat.chat_title)
 
@@ -142,7 +147,7 @@ def CreateOrResetNumberGame(chat):
 
     for chat in chats:
         number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
-        if len(number_game) == 1:
+        if len(number_game) >= 1:
             number_game = number_game[0]
             number_game.game_state = 'W'
             number_game.attempts = 0
@@ -170,7 +175,7 @@ def SetRulesInNumberGame(chat, max_answer=None, max_attempts=None):
 
     for chat in chats:
         number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
-        if len(number_game) == 1:
+        if len(number_game) >= 1:
             number_game = number_game[0]
             if max_attempts != None:
                 number_game.rule_attempts = max_attempts
@@ -198,7 +203,7 @@ def GetNumberGameParams(chat):
 
     for chat in chats:
         number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
-        if len(number_game) == 1:
+        if len(number_game) >= 1:
             number_game = number_game[0]
             return  f'Attempts: {number_game.rule_attempts}\nMax Number: {number_game.rule_highest}'
         else:
@@ -228,11 +233,16 @@ def formatInfo(json_request):
     return formated_json
 
 def getPlayerAndChatOrCreate(json_request):
-    player = Player.objects.filter(user_id = json_request.get('sender_id'))
-    if len(player) == 1:
+    user_id = json_request.get('sender_id')
+    if user_id != None:
+        player = Player.objects.filter(user_id = json_request.get('sender_id'))
+    else:
+        return None, None
+    
+    if len(player) >= 1:
         player = player[0]
         chat = Chat.objects.filter(chat_id = json_request.get('chat_id')).filter(player=player)
-        if len(chat) == 1:
+        if len(chat) >= 1:
             chat = chat[0]
         else:
             chat = Chat.objects.create(player=player,

@@ -2,12 +2,12 @@ from django.db import models
 
 # Create your models here.
 class Player(models.Model):
-    user_id = models.IntegerField(primary_key = True)
+    user_id = models.BigIntegerField(primary_key = True)
     user_name = models.CharField(max_length=100)
 
 class Chat(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    chat_id = models.IntegerField(primary_key = True)
+    chat_id = models.BigIntegerField(primary_key = True)
     chat_type = models.CharField(max_length=100)
     chat_title = models.CharField(max_length=100)
 

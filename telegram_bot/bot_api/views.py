@@ -126,11 +126,12 @@ def formatInfo(json_request):
 def getPlayerAndChatOrCreate(json_request):
     player = Player.objects.filter(user_id = json_request.get('sender_id'))
     if len(player) == 1:
-        chat = Chat.objects.filter(chat_id = json_request.get('chat_id')).filter(player=player[0])
+        player = player[0]
+        chat = Chat.objects.filter(chat_id = json_request.get('chat_id')).filter(player=player)
         if len(chat) == 1:
             chat = chat[0]
         else:
-            chat = Chat.objects.create(player=player[0],
+            chat = Chat.objects.create(player=player,
                                        chat_id=json_request.get('chat_id'),
                                        chat_type=json_request.get('chat_type'),
                                        chat_title=json_request.get('chat_title'))

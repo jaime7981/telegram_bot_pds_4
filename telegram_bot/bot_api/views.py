@@ -58,7 +58,7 @@ def webhook(request):
             elif command in game_list:
                 if command == '/number':
                     message_to_send = 'Number Game'
-                    message_to_send = play_number(text)
+                    message_to_send = play_number(text, player, chat)
                 else:
                     message_to_send = 'Game Not Implemented'
             else:
@@ -80,7 +80,7 @@ def sendMessage(chat_id, text='bot response'):
     return request
 
 
-def play_number(text):
+def play_number(text, player, chat):
     logger.info(text)
 
     # Manage Text Parameters
@@ -91,15 +91,49 @@ def play_number(text):
         if number != None:
             return str(number)
         else:
-            if parameter == 'start':
-                return 'Setting random number between 1 and 100\nNumber: ' + str(randint(1,100))
-            elif parameter == 'restart':
-                return 'Restarting game'
+            if parameter == 'start' or parameter == 'reset':
+                CreateOrResetNumberGame(chat)
+                return 'Answer set and game Ready to be played\nGO!'
+            elif parameter == 'end':
+                return 'Ending game'
             else:
                 return 'Unkown Number Game Command'
     else:
         return 'Too many parameters'
 
+# Funcion para comenzar o resetear juego
+def CreateOrResetNumberGame(chat):
+    # Todas las instancias de player en chat
+    chats = Chat.objects.filter(chat_id=chat.chat_id)
+
+    # modified rules to be implemented
+    max_answer = 100
+    max_attemps = 5
+
+    answer = randint(1, max_answer)
+
+    for chat in chats:
+        number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+        if len(number_game) == 1:
+            number_game = number_game[0]
+            number_game.game_state = 'W'
+            number_game.attempts = 0
+            number_game.response = None
+            number_game.won = False
+            number_game.rule_atemps = max_attemps
+            number_game.answer = answer
+            number_game.save(update_fields=['game_state',
+                                            'attempts',
+                                            'response',
+                                            'won',
+                                            'rule_attempts',
+                                            'answer'])
+        else:
+            number_game = NumberGame.objects.create(player=chat.player,
+                                                    chat=chat,
+                                                    rule_attempts=max_attemps,
+                                                    answer=answer)
+            number_game.save()
 
 def formatInfo(json_request):
     formated_json = {}

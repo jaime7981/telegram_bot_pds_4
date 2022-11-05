@@ -25,7 +25,11 @@ class NumberGame(models.Model):
 
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    game_state = models.CharField(max_length=1, choices=GAME_STATES)
+    game_state = models.CharField(default='W', max_length=1, choices=GAME_STATES)
     attempts = models.IntegerField(default=0, null=True, blank=True)
     response = models.IntegerField(default=None, null=True, blank=True)
-    won = models.BooleanField(null=True, blank=True)
+    won = models.BooleanField(default=False, null=True, blank=True)
+
+    rule_attempts = models.IntegerField(default=5, null=True, blank=True)
+    rule_highest = models.IntegerField(default=100, null=True, blank=True)
+    answer = models.IntegerField(default=None, null=True, blank=True)

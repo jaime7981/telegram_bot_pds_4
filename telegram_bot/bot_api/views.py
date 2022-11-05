@@ -94,10 +94,36 @@ def play_number(text, player, chat):
             if parameter == 'start' or parameter == 'reset':
                 CreateOrResetNumberGame(chat)
                 return 'Answer set and game Ready to be played\nGO!'
+            elif parameter == 'info':
+                return 'TBI: Info'
             elif parameter == 'end':
-                return 'Ending game'
+                return 'TBI: Ending game'
             else:
-                return 'Unkown Number Game Command'
+                return 'Unkown Number or Game Command'
+    elif len(text) == 3:
+        parameter = text[1]
+        set_num = text[2]
+        number = int(set_num) if set_num.isdigit() else None
+
+        if number != None:
+            if parameter == 'set_attemps':
+                SetRulesInNumberGame(max_attempts=number)
+                return 'Max attempts setted to ' + str(number)
+            elif parameter == 'set_max':
+                SetRulesInNumberGame(max_answer=number)
+                return 'Max random number setted to ' + str(number)
+        else:
+            return 'Bad arguments for seting game params'
+    elif len(text) == 1:
+        return 'NUMBER GAME\n\
+                Objective: Guess the number\n\
+                Commands:\n\
+                 -start or reset: restarts the game\n\
+                 -set_attemps num: Sets a "num" times of attempst\n\
+                 -set_max num: Sets a limit of "num" for the random number\n\
+                 -info: Returns the actual parameters of the game\n\
+                 -end: Finishes the game\n\
+                 -num: Your guess number (must be an int)'
     else:
         return 'Too many parameters'
 
@@ -133,6 +159,35 @@ def CreateOrResetNumberGame(chat):
                                                     chat=chat,
                                                     rule_attempts=max_attemps,
                                                     answer=answer)
+            number_game.save()
+
+# Funcion para comenzar o resetear juego
+def SetRulesInNumberGame(chat, max_answer=None, max_attempts=None):
+    # Todas las instancias de player en chat
+    chats = Chat.objects.filter(chat_id=chat.chat_id)
+
+    for chat in chats:
+        number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+        if len(number_game) == 1:
+            number_game = number_game[0]
+            if max_attempts != None:
+                number_game.rule_attempts = max_attempts
+                number_game.save(update_fields=['rule_attempts'])
+            elif max_answer != None:
+                number_game.rule_highest = max_answer
+                number_game.save(update_fields=['rule_highest'])
+        else:
+            if max_attempts != None:
+                number_game = NumberGame.objects.create(player=chat.player,
+                                                        chat=chat,
+                                                        rule_attempts=max_attempts)
+            elif max_answer != None:
+                number_game = NumberGame.objects.create(player=chat.player,
+                                                        chat=chat,
+                                                        rule_highest=max_answer)
+            else:
+                number_game = NumberGame.objects.create(player=chat.player,
+                                                        chat=chat)
             number_game.save()
 
 def formatInfo(json_request):

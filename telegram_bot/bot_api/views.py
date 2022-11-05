@@ -124,7 +124,7 @@ def formatInfo(json_request):
     return formated_json
 
 def getPlayerAndChatOrCreate(json_request):
-    player = Player.objects.get(user_id = json_request.get('sender_id'))
+    player = Player.objects.filter(user_id = json_request.get('sender_id'))
 
     if player.exists():
         chat = Chat.objects.filter(chat_id = json_request.get('chat_id')).filter(player=player)

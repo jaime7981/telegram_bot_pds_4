@@ -6,7 +6,7 @@ class Player(models.Model):
     user_name = models.CharField(max_length=100)
 
 class Chat(models.Model):
-    player = models.ForeignKey(Player)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
     chat_id = models.IntegerField(primary_key = True)
     chat_type = models.CharField(max_length=100)
     chat_title = models.CharField(max_length=100)

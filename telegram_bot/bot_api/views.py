@@ -82,7 +82,7 @@ def play_number(text):
         parameter = text[1]
         number = int(parameter) if parameter.isdigit() else None
 
-        if number == None:
+        if number != None:
             return str(number)
         else:
             if parameter == 'start':

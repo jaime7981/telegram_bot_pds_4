@@ -162,6 +162,7 @@ def UpdateOnWrongAnswer(number_game):
         return False
     else:
         number_game.attempts = attempts_done + 1
+        number_game.save(update_fields=['attempts'])
         return True
 
 def UpdateOnCorrectAnswer(winner_game, chat):
@@ -175,7 +176,8 @@ def UpdateOnCorrectAnswer(winner_game, chat):
     answer = randint(1, max_answer)
 
     stats = Stats.objects.get(player=winner_game.player)
-    stats.win = stats.win + 1
+    stats.won = stats.won + 1
+    stats.save(update_fields=['won'])
 
     for chat in chats:
         number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
@@ -196,7 +198,7 @@ def UpdateOnCorrectAnswer(winner_game, chat):
             stats = Stats.objects.get(player=number_game.player)
             stats.played = stats.played + 1
             stats.lost = stats.played - stats.win
-
+            stats.save(update_fields=['played', 'lost'])
         else:
             number_game = NumberGame.objects.create(player=chat.player,
                                                     chat=chat,

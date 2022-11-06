@@ -58,7 +58,8 @@ def webhook(request):
                 elif command == '/games':
                     message_to_send = '\n'.join(game_list)
                 elif command == '/stats':
-                    message_to_send = 'To Be Imlpemented: user stats'
+                    message_to_send = get_stats(text, player, chat)
+                    #message_to_send = 'To Be Imlpemented: user stats'
                 elif command == '/welcome':
                     message_to_send = f'Hello {player.user_name}!\nWelcome to {chat.chat_title}'
                 else:
@@ -143,3 +144,24 @@ def getPlayerAndChatOrCreate(json_request):
                                        chat_title=json_request.get('chat_title'))
         chat.save()
     return (player, chat)
+
+def get_stats(text, player, chat):
+    logger.info(text)
+    if len(text) == 1:
+        player_stats = Stats.objects.filter(player=player.user_id)
+        if player_stats is not None:
+            logger.info(player_stats[0].won)
+            return f"The player {player.user_name} has played {player_stats[0].played} games, won {player_stats[0].won} games, and lost {player_stats[0].lost} games"
+        else:
+            return f"The player {player.user_name} has not played any games"
+    elif len(text) == 2:
+        name = text[1:]
+        search_player = Player.objects.filter(user_name=name)
+        if search_player is not None:
+            player_stats = Stats.objects.filter(player=search_player.user_id)
+            if player_stats is not None:
+                return f"The player {name} has played {player_stats[0].played} games, won {player_stats[0].won} games, and lost {player_stats[0].lost} games"
+            else:
+                return f"The player {player.user_name} has not played any games"
+        else:
+            return f"The player {name} was not found, use @ to tag another player"

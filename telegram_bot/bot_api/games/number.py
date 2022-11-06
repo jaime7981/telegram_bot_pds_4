@@ -1,7 +1,7 @@
 
 from random import randint
 
-from telegram_bot.bot_api.models import Chat, NumberGame, Stats
+from bot_api.models import Chat, NumberGame, Stats
 
 def play_number(text, chat):
     # Manage Text Parameters

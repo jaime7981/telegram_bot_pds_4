@@ -12,3 +12,4 @@
 
 ## Make Bot Requests
  - https://api.telegram.org/bot<token>/METHOD_NAME
+ - set Webhook: `curl -F "url=https://developmentcl.xyz/webhook/" https://api.telegram.org/bot<TOKEN>/setWebhook`

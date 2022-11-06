@@ -10,7 +10,8 @@ from bot_api.models import Player, Chat, Stats, NumberGame
 
 import logging, requests, json
 
-from telegram_bot.bot_api.games.number import play_number
+from bot_api.games.number import play_number
+
 logger = logging.getLogger('django')
 
 bot_commands = ['/start', '/games', '/stats', '/welcome']

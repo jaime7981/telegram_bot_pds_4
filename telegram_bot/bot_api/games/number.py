@@ -27,7 +27,8 @@ def play_number(text, chat):
             elif parameter == 'info':
                 return GetNumberGameParams(chat)
             elif parameter == 'end':
-                return 'TBI: Ending game'
+                EndGame(chat)
+                return 'Game ended\nrun start or reset for new game'
             else:
                 return 'Unkown Number or Game Command'
     elif len(text) == 3:
@@ -197,7 +198,7 @@ def UpdateOnCorrectAnswer(winner_game, chat):
                                             'answer'])
             stats = Stats.objects.get(player=number_game.player)
             stats.played = stats.played + 1
-            stats.lost = stats.played - stats.win
+            stats.lost = stats.played - stats.won
             stats.save(update_fields=['played', 'lost'])
         else:
             number_game = NumberGame.objects.create(player=chat.player,
@@ -208,3 +209,28 @@ def UpdateOnCorrectAnswer(winner_game, chat):
     
     winner_game.won = True
     winner_game.save()
+
+def EndGame(chat):
+    # Todas las instancias de player en chat
+    chats = Chat.objects.filter(chat_id=chat.chat_id)
+
+    for chat in chats:
+        number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+        if len(number_game) >= 1:
+            number_game = number_game[0]
+            number_game.game_state = 'B'
+            number_game.attempts = number_game.rule_attempts
+            number_game.response = None
+            number_game.won = False
+            number_game.save(update_fields=['game_state',
+                                            'attempts',
+                                            'response',
+                                            'won'])
+            stats = Stats.objects.get(player=number_game.player)
+            stats.played = stats.played + 1
+            stats.lost = stats.played - stats.won
+            stats.save(update_fields=['played', 'lost'])
+        else:
+            number_game = NumberGame.objects.create(player=chat.player,
+                                                    chat=chat)
+            number_game.save()

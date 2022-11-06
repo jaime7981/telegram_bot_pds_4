@@ -11,11 +11,15 @@ def play_number(text, chat):
 
         if number != None:
             number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
-            answer = number_game.answer
-            if answer != None:
-                MainGame(number_game, answer, number, chat)
+            if len(number_game) >= 1:
+                number_game = number_game[0]
+                answer = number_game.answer
+                if answer != None:
+                    MainGame(number_game, answer, number, chat)
+                else:
+                    return 'No answer is set for this game, try the start command'
             else:
-                return 'No answer is set for this game, try the start command'
+                return 'Error getting game state'
         else:
             if parameter == 'start' or parameter == 'reset':
                 CreateOrResetNumberGame(chat)

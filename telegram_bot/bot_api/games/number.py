@@ -15,7 +15,7 @@ def play_number(text, chat):
                 number_game = number_game[0]
                 answer = number_game.answer
                 if answer != None:
-                    MainGame(number_game, answer, number, chat)
+                    return MainGame(number_game, answer, number, chat)
                 else:
                     return 'No answer is set for this game, try the start command'
             else:

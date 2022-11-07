@@ -108,11 +108,13 @@ def formatInfo(json_request):
 
         if formated_json['chat_type'] == 'group':
             formated_json['chat_title'] = message.get('chat').get('title')
+        elif formated_json['chat_type'] == 'supergroup':
+            formated_json['chat_title'] = message.get('chat').get('title')
         else:
-            formated_json['chat_title'] = message.get('chat').get('first_name') + ' ' + message.get('chat').get('last_name')
+            formated_json['chat_title'] = message.get('chat').get('first_name') + ' ' + message.get('chat').get('last_name', '')
 
         formated_json['sender_id'] = message.get('from').get('id')
-        formated_json['sender_name'] = message.get('from').get('first_name') + ' ' + message.get('from').get('last_name')
+        formated_json['sender_name'] = message.get('from').get('first_name') + ' ' + message.get('from').get('last_name', '')
         
         formated_json['message_id'] = message.get('id')
         formated_json['message_date'] = message.get('date')

@@ -69,7 +69,7 @@ def webhook(request):
             elif command in game_list:
                 if command == '/number':
                     message_to_send = 'Number Game'
-                    message_to_send = play_number(text, chat)
+                    message_to_send = play_number(text, chat, player)
                 else:
                     message_to_send = 'Game Not Implemented'
             else:
@@ -93,10 +93,11 @@ def sendMessage(chat_id, text='bot response'):
 def formatInfo(json_request):
     formated_json = {}
     message = json_request.get('message')
-    print("mensaje:")
-    print(message)
+
     if message == None:
         message = json_request.get('edited_message')
+    if message == None:
+        message = json_request.get('my_chat_member')
 
     if message is not None:
         #Skipping checks

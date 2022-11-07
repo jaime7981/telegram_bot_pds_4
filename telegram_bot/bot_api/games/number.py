@@ -3,7 +3,7 @@ from random import randint
 
 from bot_api.models import Chat, NumberGame, Stats
 
-def play_number(text, chat):
+def play_number(text, chat, player):
     # Manage Text Parameters
     if len(text) == 2:
         parameter = text[1]
@@ -19,7 +19,9 @@ def play_number(text, chat):
                 else:
                     return 'No answer is set for this game, try the start command'
             else:
-                return 'Error getting game state'
+                new_game = NumberGame.objects.create(player=player,
+                                                     chat=chat)
+                return MainGame(new_game, answer, number, chat)
         else:
             if parameter == 'start' or parameter == 'reset':
                 CreateOrResetNumberGame(chat)

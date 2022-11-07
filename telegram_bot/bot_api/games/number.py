@@ -19,9 +19,18 @@ def play_number(text, chat, player):
                 else:
                     return 'No answer is set for this game, try the start command'
             else:
-                new_game = NumberGame.objects.create(player=player,
-                                                     chat=chat)
-                return MainGame(new_game, answer, number, chat)
+                number_game = NumberGame.objects.filter(chat=chat)
+                answer = None
+                if len(number_game) >= 1:
+                    number_game = number_game[0]
+                    answer = number_game.answer
+                if answer != None:
+                    new_game = NumberGame.objects.create(player=player,
+                                                         chat=chat,
+                                                         answer=answer)
+                    return MainGame(new_game, answer, number, chat)
+                else:
+                    return 'No answer is set for this game, try the start command'
         else:
             if parameter == 'start' or parameter == 'reset':
                 CreateOrResetNumberGame(chat)

@@ -93,6 +93,8 @@ def sendMessage(chat_id, text='bot response'):
 def formatInfo(json_request):
     formated_json = {}
     message = json_request.get('message')
+    print("mensaje:")
+    print(message)
     if message == None:
         message = json_request.get('edited_message')
 
@@ -132,11 +134,12 @@ def getPlayerAndChatOrCreate(json_request):
                                        chat_type=json_request.get('chat_type'),
                                        chat_title=json_request.get('chat_title'))
             chat.save()
+
     else:
         player = Player.objects.create(user_id=json_request.get('sender_id'),
                                        user_name=json_request.get('sender_name'))
         player.save()
-        stats = Stats.objects.create(player=player)
+        stats = Stats.objects.create(player=player,chat_id=json_request.get('chat_id'))
         stats.save()
         chat = Chat.objects.create(player=player,
                                        chat_id=json_request.get('chat_id'),
@@ -146,7 +149,7 @@ def getPlayerAndChatOrCreate(json_request):
     return (player, chat)
 
 def get_stats(text, player, chat):
-    logger.info(text)
+    #logger.info(text)
     if len(text) == 1:
         player_stats = Stats.objects.filter(player=player.user_id)
         if player_stats is not None:
@@ -154,14 +157,18 @@ def get_stats(text, player, chat):
             return f"The player {player.user_name} has played {player_stats[0].played} games, won {player_stats[0].won} games, and lost {player_stats[0].lost} games"
         else:
             return f"The player {player.user_name} has not played any games"
-    elif len(text) == 2:
-        name = text[1:]
-        search_player = Player.objects.filter(user_name=name)
-        if search_player is not None:
-            player_stats = Stats.objects.filter(player=search_player.user_id)
-            if player_stats is not None:
-                return f"The player {name} has played {player_stats[0].played} games, won {player_stats[0].won} games, and lost {player_stats[0].lost} games"
-            else:
-                return f"The player {player.user_name} has not played any games"
-        else:
-            return f"The player {name} was not found, use @ to tag another player"
+    if len(text) == 2:
+        if text[1] == "all":
+            
+            
+            chats = Chat.objects.filter(chat_id=chat.chat_id)
+            text = "Player                          W L played"
+            for i in range(len(chats)):
+                stat = Stats.objects.filter(player=chats[i].player)
+                player_name = Player.objects.filter(user_id=chats[i].player.user_id)
+                length = int(len(player_name[0].user_name))
+                total = "  "*(20-int(len(player_name[0].user_name)))
+                text+= f" {str(player_name[0].user_name)[:21]}{total}{stat[0].won}  {stat[0].lost}     {stat[0].played}"
+            return text
+                
+    return f"No se encontro la accion: {' '.join(text)}"

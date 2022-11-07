@@ -149,7 +149,11 @@ def getPlayerAndChatOrCreate(json_request):
     return (player, chat)
 
 def get_stats(text, player, chat):
+<<<<<<< HEAD
     #logger.info(text)
+=======
+    logger.info(text)
+>>>>>>> 01daa41a3e45a78173a0f601eed2d326e4861cbe
     if len(text) == 1:
         player_stats = Stats.objects.filter(player=player.user_id)
         if player_stats is not None:
@@ -157,6 +161,7 @@ def get_stats(text, player, chat):
             return f"The player {player.user_name} has played {player_stats[0].played} games, won {player_stats[0].won} games, and lost {player_stats[0].lost} games"
         else:
             return f"The player {player.user_name} has not played any games"
+<<<<<<< HEAD
     if len(text) == 2:
         if text[1] == "all":
             
@@ -172,3 +177,16 @@ def get_stats(text, player, chat):
             return text
                 
     return f"No se encontro la accion: {' '.join(text)}"
+=======
+    elif len(text) == 2:
+        name = text[1:]
+        search_player = Player.objects.filter(user_name=name)
+        if search_player is not None:
+            player_stats = Stats.objects.filter(player=search_player.user_id)
+            if player_stats is not None:
+                return f"The player {name} has played {player_stats[0].played} games, won {player_stats[0].won} games, and lost {player_stats[0].lost} games"
+            else:
+                return f"The player {player.user_name} has not played any games"
+        else:
+            return f"The player {name} was not found, use @ to tag another player"
+>>>>>>> 01daa41a3e45a78173a0f601eed2d326e4861cbe

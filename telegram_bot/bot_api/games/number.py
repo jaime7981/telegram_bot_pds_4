@@ -185,9 +185,6 @@ def UpdateOnCorrectAnswer(winner_game, chat):
             number_game = NumberGame.objects.create(player=chat.player,
                                                     chat=chat)
             number_game.save()
-    
-    winner_game.won = True
-    winner_game.save()
 
 def EndGame(chat):
     # Todas las instancias de player en chat

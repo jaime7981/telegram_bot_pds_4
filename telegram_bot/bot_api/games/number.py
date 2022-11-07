@@ -47,14 +47,14 @@ def play_number(text, chat):
             return 'Bad arguments for seting game params'
     elif len(text) == 1:
         return 'NUMBER GAME\n\
-            Objective: Guess the number\n\
-            Commands:\n\
-             -start or reset: restarts the game\n\
-             -set_attempts num: Sets a "num" times of attempts\n\
-             -set_max num: Sets a limit of "num" for the random number\n\
-             -info: Returns the actual parameters of the game\n\
-             -end: Finishes the game\n\
-             -num: Your guess number (must be an int)'
+Objective: Guess the number\n\
+Commands:\n\
+ -start or reset: restarts the game\n\
+ -set_attempts num: Sets a "num" times of attempts\n\
+ -set_max num: Sets a limit of "num" for the random number\n\
+ -info: Returns the actual parameters of the game\n\
+ -end: Finishes the game\n\
+ -num: Your guess number (must be an int)'
     else:
         return 'Too many parameters'
 
@@ -62,12 +62,15 @@ def play_number(text, chat):
 def CreateOrResetNumberGame(chat):
     # Todas las instancias de player en chat
     chats = Chat.objects.filter(chat_id=chat.chat_id)
+    number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
 
     # modified rules to be implemented
     max_answer = 100
-    max_attempts = 5
-
     answer = randint(1, max_answer)
+
+    if len(number_game) >= 1:
+        number_game = number_game[0]
+        answer = randint(1, number_game.rule_highest)
 
     for chat in chats:
         number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
@@ -75,20 +78,13 @@ def CreateOrResetNumberGame(chat):
             number_game = number_game[0]
             number_game.game_state = 'W'
             number_game.attempts = 0
-            number_game.response = None
-            number_game.won = False
-            number_game.rule_atemps = max_attempts
             number_game.answer = answer
             number_game.save(update_fields=['game_state',
                                             'attempts',
-                                            'response',
-                                            'won',
-                                            'rule_attempts',
                                             'answer'])
         else:
             number_game = NumberGame.objects.create(player=chat.player,
                                                     chat=chat,
-                                                    rule_attempts=max_attempts,
                                                     answer=answer)
             number_game.save()
 
@@ -134,7 +130,9 @@ def GetNumberGameParams(chat):
             return 'Error when requesting info params'
 
 def MainGame(number_game, answer, number, chat):
-    if answer > number:
+    if number_game.game_state == 'B':
+        return f'{number_game.player.user_name} game is blocked, try start or restart'
+    elif answer > number:
         flag = UpdateOnWrongAnswer(number_game)
         if flag == True:
             return f'{number_game.player.user_name} answer is higher than {number}\n\
@@ -157,24 +155,16 @@ def MainGame(number_game, answer, number, chat):
 def UpdateOnWrongAnswer(number_game):
     attempts_done = number_game.attempts
 
-    if attempts_done >= number_game.rule_attempts:
-        number_game.game_state = 'B'
-        number_game.save(update_fields=['game_state'])
-        return False
-    else:
+    if attempts_done < number_game.rule_attempts:
         number_game.attempts = attempts_done + 1
         number_game.save(update_fields=['attempts'])
         return True
+    else:
+        return False
 
 def UpdateOnCorrectAnswer(winner_game, chat):
     # Todas las instancias de player en chat
     chats = Chat.objects.filter(chat_id=chat.chat_id)
-
-    # modified rules to be implemented
-    max_answer = winner_game.rule_highest
-    max_attempts = winner_game.rule_attempts
-
-    answer = randint(1, max_answer)
 
     stats = Stats.objects.get(player=winner_game.player)
     stats.won = stats.won + 1
@@ -185,26 +175,15 @@ def UpdateOnCorrectAnswer(winner_game, chat):
         if len(number_game) >= 1:
             number_game = number_game[0]
             number_game.game_state = 'B'
-            number_game.attempts = 0
-            number_game.response = None
-            number_game.won = False
-            number_game.rule_atemps = max_attempts
-            number_game.answer = answer
-            number_game.save(update_fields=['game_state',
-                                            'attempts',
-                                            'response',
-                                            'won',
-                                            'rule_attempts',
-                                            'answer'])
+            number_game.save(update_fields=['game_state'])
+
             stats = Stats.objects.get(player=number_game.player)
             stats.played = stats.played + 1
             stats.lost = stats.played - stats.won
             stats.save(update_fields=['played', 'lost'])
         else:
             number_game = NumberGame.objects.create(player=chat.player,
-                                                    chat=chat,
-                                                    rule_attempts=max_attempts,
-                                                    answer=answer)
+                                                    chat=chat)
             number_game.save()
     
     winner_game.won = True
@@ -219,18 +198,14 @@ def EndGame(chat):
         if len(number_game) >= 1:
             number_game = number_game[0]
             number_game.game_state = 'B'
-            number_game.attempts = number_game.rule_attempts
-            number_game.response = None
-            number_game.won = False
-            number_game.save(update_fields=['game_state',
-                                            'attempts',
-                                            'response',
-                                            'won'])
+            number_game.save(update_fields=['game_state'])
+
             stats = Stats.objects.get(player=number_game.player)
             stats.played = stats.played + 1
             stats.lost = stats.played - stats.won
             stats.save(update_fields=['played', 'lost'])
         else:
             number_game = NumberGame.objects.create(player=chat.player,
-                                                    chat=chat)
+                                                    chat=chat,
+                                                    game_state = 'B')
             number_game.save()

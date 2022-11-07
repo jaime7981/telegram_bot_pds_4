@@ -28,6 +28,7 @@ def play_number(text, chat, player):
                     new_game = NumberGame.objects.create(player=player,
                                                          chat=chat,
                                                          answer=answer)
+                    new_game.save()
                     return MainGame(new_game, answer, number, chat)
                 else:
                     return 'No answer is set for this game, try the start command'

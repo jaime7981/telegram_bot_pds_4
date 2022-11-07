@@ -136,20 +136,20 @@ def MainGame(number_game, answer, number, chat):
         flag = UpdateOnWrongAnswer(number_game)
         if flag == True:
             return f'{number_game.player.user_name} answer is higher than {number}\n\
-                {number_game.attempts} attempts out of {number_game.rule_attempts}'
+{number_game.attempts} attempts out of {number_game.rule_attempts}'
         else:
             return f'{number_game.player.user_name} is out of attempts'
     elif answer < number:
         flag = UpdateOnWrongAnswer(number_game)
         if flag == True:
             return f'{number_game.player.user_name} answer is lower than {number}\n\
-                {number_game.attempts} attempts out of {number_game.rule_attempts}'
+{number_game.attempts} attempts out of {number_game.rule_attempts}'
         else:
             return f'{number_game.player.user_name} is out of attempts'
     elif answer == number:
         UpdateOnCorrectAnswer(number_game, chat)
         return f'{number_game.player.user_name} answer is corrrect!\n\
-            {number_game.answer} was the answer in {number_game.attempts}'
+{number_game.answer} was the answer in {number_game.attempts} attempts'
 
 # True if can continue False if total attempts done
 def UpdateOnWrongAnswer(number_game):

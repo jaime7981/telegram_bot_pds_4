@@ -162,13 +162,13 @@ def get_stats(text, player, chat):
             
             
             chats = Chat.objects.filter(chat_id=chat.chat_id)
-            text = "Player                          W L played"
+            text = "Player                          W L played\n"
             for i in range(len(chats)):
                 stat = Stats.objects.filter(player=chats[i].player)
                 player_name = Player.objects.filter(user_id=chats[i].player.user_id)
                 length = int(len(player_name[0].user_name))
                 total = "  "*(20-int(len(player_name[0].user_name)))
-                text+= f" {str(player_name[0].user_name)[:21]}{total}{stat[0].won}  {stat[0].lost}     {stat[0].played}"
+                text+= f" {str(player_name[0].user_name)[:21]}{total}{stat[0].won}  {stat[0].lost}     {stat[0].played}\n"
             return text
                 
     return f"No se encontro la accion: {' '.join(text)}"

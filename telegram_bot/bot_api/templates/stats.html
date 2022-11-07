@@ -1,0 +1,22 @@
+
+{% extends "test_header.html" %}
+{% load static %}
+{% block content %}
+
+<h1>All Stats</h1>
+
+{% if all_stats %}
+    <div>
+        {% for player_stat in all_stats %}
+            <ul>
+                <li>Player: {{ player_stat.player.user_name }}</li>
+                <li>Chat/Group: {{ player_stat.chat.chat_title }}</li>
+                <li>Played: {{ player_stat.played }}</li>
+                <li>Won: {{ player_stat.won }}</li>
+                <li>Lost: {{ player_stat.lost }}</li>
+            </ul><br>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% endblock %}

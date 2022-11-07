@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('test/', bot_views.test_page, name = 'test_page'),
     path('webhook/', bot_views.webhook, name = 'webhook'),
-    path('', bot_views.root, name='webhook-redirect'),
+    path('', bot_views.root, name='stats'),
 ]
 
 # curl -F "url=https://developmentcl.xyz/webhook" https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/setWebhook

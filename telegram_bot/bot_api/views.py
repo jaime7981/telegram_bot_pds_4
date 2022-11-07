@@ -23,7 +23,9 @@ def test_page(request):
     return(render(request, 'test.html', context=context))
 
 def root(request):
-    return HttpResponse(status=200)
+    all_stats = Stats.objects.all()
+    context = {'all_stats':all_stats}
+    return(render(request, 'stats.html', context=context))
 
 @csrf_exempt
 def webhook(request):

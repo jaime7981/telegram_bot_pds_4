@@ -11,6 +11,7 @@ from bot_api.models import Player, Chat, Stats, NumberGame
 import logging, requests, json
 
 from bot_api.games.number import play_number
+from bot_api.games.trivia import play_trivia
 
 logger = logging.getLogger('django')
 
@@ -72,6 +73,8 @@ def webhook(request):
                 if command == '/number':
                     message_to_send = 'Number Game'
                     message_to_send = play_number(text, chat, player)
+                elif command == '/trivia':
+                    message_to_send = play_trivia(text, chat, player)
                 else:
                     message_to_send = 'Game Not Implemented'
             else:

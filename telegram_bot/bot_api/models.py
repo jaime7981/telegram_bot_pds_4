@@ -60,6 +60,6 @@ class TriviaGame(models.Model):
 class TriviaGameInstance(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    player = models.ForeignKey(TriviaGame, on_delete=models.CASCADE)
+    trivia = models.ForeignKey(TriviaGame, on_delete=models.CASCADE)
 
     points = models.IntegerField(default=0)

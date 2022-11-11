@@ -125,7 +125,8 @@ def sendClosingPoll(chat_id, question, time=60):
     return request
 
 def SavePoll(request, chat, question):
-    result = request.get('result')
+    request_json = request.json()
+    result = request_json.get('result')
 
     if result != None:
         poll_id = result.get('poll').get('id')

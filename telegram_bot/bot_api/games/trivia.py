@@ -5,6 +5,11 @@ import requests
 def play_trivia(text, chat, player):
     # Manage Text Parameters
     if len(text) == 2:
+        if text[1] == 'test':
+            question_from_api = getRandomQuestion()
+            questions = parseAndSaveQuestions(question_from_api)
+            if questions != None and len(questions) > 0:
+                question = questions[0]
         return 'Two parameters not implemented'
     elif len(text) == 3:
         return 'Three parameters not implemented'
@@ -53,3 +58,29 @@ def parseAndSaveQuestions(json_response):
                 questions.append(new_question)
         return questions
     return None
+
+
+def sendPoll(chat_id, question):
+    url = f'https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/sendPoll'
+
+    answer_list = [question.ans1, 
+                   question.ans2,
+                   question.ans3,
+                   question.correct]
+    answer_list.sort()
+
+    correct_answer_id = 0
+    for id, answer in enumerate(answer_list):
+        if answer == question.correct:
+            correct_answer_id = id
+            break
+
+    question_text = question.question
+
+    data = {'chat_id':int(chat_id),
+            'question':question_text,
+            'options':answer_list,
+            'type':'quiz',
+            'correct_option_id':correct_answer_id}
+    request = requests.post(url, json=data)
+    return request

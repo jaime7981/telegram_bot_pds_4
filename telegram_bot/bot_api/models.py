@@ -52,7 +52,7 @@ class TriviaGame(models.Model):
         ('T', 'Time')
     )
 
-    question = models.ForeignKey(Question, default=None)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, default=None)
 
     game_state = models.CharField(default='W', max_length=1, choices=GAME_STATES)
     game_mode = models.CharField(default='F', max_length=1, choices=GAME_MODES)

@@ -41,6 +41,11 @@ def webhook(request):
         logger.info(request_data)
         request_json = formatInfo(request_data)
 
+        if request_json.get('chat_type') == 'poll':
+            vote_count = request_json.get('total_voter_count')
+            sendMessage(chat_id, text=f'{vote_count} have voted')
+            return JsonResponse({'success':'post method working'},status=200)
+
         player, chat = getPlayerAndChatOrCreate(request_json)
         if player == None or chat == None:
             chat_id = int(request_json.get('chat_id'))
@@ -103,6 +108,12 @@ def formatInfo(json_request):
         message = json_request.get('edited_message')
     if message == None:
         message = json_request.get('my_chat_member')
+    if message == None:
+        message = json_request.get('poll')
+        formated_json['total_voter_count'] = message.get('total_voter_count')
+        formated_json['is_closed'] = message.get('is_closed')
+        formated_json['chat_type'] = 'poll'
+        return formated_json
 
     if message is not None:
         #Skipping checks

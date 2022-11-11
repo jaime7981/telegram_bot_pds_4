@@ -5,11 +5,20 @@ import requests
 def play_trivia(text, chat, player):
     # Manage Text Parameters
     if len(text) == 2:
-        if text[1] == 'test':
+        if text[1] == 'poll':
             question_from_api = getRandomQuestion()
             questions = parseAndSaveQuestions(question_from_api)
             if questions != None and len(questions) > 0:
                 question = questions[0]
+                sendPoll(chat.chat_id, question)
+                return 'test poll'
+        elif text[1] == 'closing_poll':
+            question_from_api = getRandomQuestion()
+            questions = parseAndSaveQuestions(question_from_api)
+            if questions != None and len(questions) > 0:
+                question = questions[0]
+                sendClosingPoll(chat.chat_id, question)
+                return 'test poll'
         return 'Two parameters not implemented'
     elif len(text) == 3:
         return 'Three parameters not implemented'
@@ -19,6 +28,8 @@ Objective: Respond the questions\n\
 Commands:\n\
  -start or reset: restarts the game\n\
  -info: Returns the actual parameters of the game\n\
+ -poll: Test poll\n\
+ -closing poll: Test closing poll 60 secs\n\
  -end: Finishes the game'
     else:
         return 'Too many parameters'
@@ -81,6 +92,32 @@ def sendPoll(chat_id, question):
             'question':question_text,
             'options':answer_list,
             'type':'quiz',
+            'correct_option_id':correct_answer_id}
+    request = requests.post(url, json=data)
+    return request
+
+def sendClosingPoll(chat_id, question, time=60):
+    url = f'https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/sendPoll'
+
+    answer_list = [question.ans1, 
+                   question.ans2,
+                   question.ans3,
+                   question.correct]
+    answer_list.sort()
+
+    correct_answer_id = 0
+    for id, answer in enumerate(answer_list):
+        if answer == question.correct:
+            correct_answer_id = id
+            break
+
+    question_text = question.question
+
+    data = {'chat_id':int(chat_id),
+            'question':question_text,
+            'options':answer_list,
+            'type':'quiz',
+            'open_period':time,
             'correct_option_id':correct_answer_id}
     request = requests.post(url, json=data)
     return request

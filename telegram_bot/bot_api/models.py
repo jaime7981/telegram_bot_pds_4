@@ -34,10 +34,11 @@ class NumberGame(models.Model):
 
 
 class Question(models.Model):
+    question = models.CharField(max_length=300)
     ans1 = models.CharField(max_length=100)
     ans2 = models.CharField(max_length=100)
     ans3 = models.CharField(max_length=100)
-    ans4 = models.CharField(max_length=100)
+    #ans4 = models.CharField(default=None, max_length=100)
     correct = models.CharField(max_length=100)
 
 class TriviaGame(models.Model):

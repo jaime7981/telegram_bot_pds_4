@@ -43,7 +43,7 @@ def webhook(request):
 
         if request_json.get('chat_type') == 'poll':
             vote_count = request_json.get('total_voter_count')
-            sendMessage(chat_id, text=f'{vote_count} have voted')
+            logger.info(f'{vote_count} people have voted')
             return JsonResponse({'success':'post method working'},status=200)
 
         player, chat = getPlayerAndChatOrCreate(request_json)

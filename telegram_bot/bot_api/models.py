@@ -57,6 +57,7 @@ class TriviaGame(models.Model):
     game_state = models.CharField(default='W', max_length=1, choices=GAME_STATES)
     game_mode = models.CharField(default='F', max_length=1, choices=GAME_MODES)
     num_of_questions = models.IntegerField(default='1')
+    answered_questions = models.IntegerField(default='0')
 
 class TriviaGameInstance(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
@@ -64,3 +65,10 @@ class TriviaGameInstance(models.Model):
     trivia = models.ForeignKey(TriviaGame, on_delete=models.CASCADE)
 
     points = models.IntegerField(default=0)
+
+class Poll(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, default=None)
+    poll_id = models.BigIntegerField()
+    vote_numbers = models.IntegerField(default='0')
+    closed = models.BooleanField(default=False)

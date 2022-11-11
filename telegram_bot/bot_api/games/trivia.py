@@ -1,4 +1,4 @@
-from bot_api.models import Chat, Stats, Question, TriviaGame, TriviaGameInstance
+from bot_api.models import Chat, Stats, Question, Poll, TriviaGame, TriviaGameInstance
 
 import requests
 
@@ -11,14 +11,16 @@ def play_trivia(text, chat, player):
             if questions != None and len(questions) > 0:
                 question = questions[0]
                 request = sendPoll(chat.chat_id, question)
-                return request.json()
+                SavePoll(request, chat, question)
+                return 'Answer!'
         elif text[1] == 'closing_poll':
             question_from_api = getRandomQuestion()
             questions = parseAndSaveQuestions(question_from_api)
             if questions != None and len(questions) > 0:
                 question = questions[0]
                 request = sendClosingPoll(chat.chat_id, question)
-                return request.json()
+                SavePoll(request, chat, question)
+                return 'Answer!'
         return 'Two parameters not implemented'
     elif len(text) == 3:
         return 'Three parameters not implemented'
@@ -121,3 +123,15 @@ def sendClosingPoll(chat_id, question, time=60):
             'correct_option_id':correct_answer_id}
     request = requests.post(url, json=data)
     return request
+
+def SavePoll(request, chat, question):
+    result = request.get('result')
+
+    if result != None:
+        poll_id = result.get('poll').get('id')
+        new_poll = Poll.objects.create(chat=chat,
+                                    question=question,
+                                    poll_id=poll_id)
+        new_poll.save()
+        return new_poll
+    return None

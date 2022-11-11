@@ -10,15 +10,15 @@ def play_trivia(text, chat, player):
             questions = parseAndSaveQuestions(question_from_api)
             if questions != None and len(questions) > 0:
                 question = questions[0]
-                sendPoll(chat.chat_id, question)
-                return 'test poll'
+                request = sendPoll(chat.chat_id, question)
+                return request.json()
         elif text[1] == 'closing_poll':
             question_from_api = getRandomQuestion()
             questions = parseAndSaveQuestions(question_from_api)
             if questions != None and len(questions) > 0:
                 question = questions[0]
-                sendClosingPoll(chat.chat_id, question)
-                return 'test poll'
+                request = sendClosingPoll(chat.chat_id, question)
+                return request.json()
         return 'Two parameters not implemented'
     elif len(text) == 3:
         return 'Three parameters not implemented'

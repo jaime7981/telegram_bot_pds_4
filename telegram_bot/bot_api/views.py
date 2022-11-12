@@ -111,11 +111,12 @@ def formatInfo(json_request):
         message = json_request.get('my_chat_member')
     if message == None:
         message = json_request.get('poll')
-        formated_json['poll_id'] = message.get('id')
-        formated_json['total_voter_count'] = message.get('total_voter_count')
-        formated_json['is_closed'] = message.get('is_closed')
-        formated_json['chat_type'] = 'poll'
-        return formated_json
+        if message != None:
+            formated_json['poll_id'] = message.get('id')
+            formated_json['total_voter_count'] = message.get('total_voter_count')
+            formated_json['is_closed'] = message.get('is_closed')
+            formated_json['chat_type'] = 'poll'
+            return formated_json
     if message == None:
         message = json_request.get('poll_answer')
         formated_json['poll_id'] = message.get('poll_id')

@@ -6,7 +6,16 @@ logger = logging.getLogger('django')
 
 def play_trivia(text, chat, player):
     # Manage Text Parameters
+    trivia_intance = TriviaGameInstance.objects.filter(chat=chat)
+    if len(trivia_intance) < 1:
+        #Create new instance and trivia
+        new_game = TriviaGame.objects.create(game_state="W",game_mode="F",question=None)
+        new_game.save()
+        new_instance = TriviaGameInstance.objects.create(player=player,chat=chat,trivia=new_game)
+        new_instance.save()
+        
     if len(text) == 2:
+        
         if text[1] == 'poll':
             question_from_api = getRandomQuestion()
             questions = parseAndSaveQuestions(question_from_api)
@@ -23,12 +32,19 @@ def play_trivia(text, chat, player):
                 request = sendClosingPoll(chat.chat_id, question)
                 SavePoll(request, chat, question)
                 return 'Answer!'
+        elif text[1] == 'start':
+            pass
+        elif text[1] == 'info':
+            message = GameInfo(chat=chat)
+            return message
         return 'Two parameters not implemented'
     elif len(text) == 3:
         if text[1] == 'set_question_nr':
-            return 'update question number not implemented'
+            message = UpdateGameParams(chat, text[2], text[1])
+            return message
         elif text[1] == 'set_game_mode':
-            return 'update game mode not implemented'
+            message = UpdateGameParams(chat, text[2], text[1])
+            return message
         return 'Three parameters not implemented'
     elif len(text) == 1:
         return 'TRIVIA GAME\n\
@@ -43,6 +59,8 @@ Commands:\n\
  -end: Finishes the game'
     else:
         return 'Too many parameters'
+
+
 
 def PollWinOrResponseLimit(request_json, poll: Poll):
     chat = poll.chat
@@ -85,6 +103,42 @@ def parseAndSaveQuestions(json_response):
         return questions
     return None
 
+def UpdateGameParams(chat, value, command):
+    instance = TriviaGameInstance.objects.filter(chat=chat)
+    print(instance)
+    if len(instance) >= 1:
+        games = TriviaGame.objects.filter(id=instance[0].trivia.id)
+        game = games[0]
+        if command == "set_question_nr":
+            if is_integer(value) and int(value) >= 1:
+                game.num_of_questions = value
+                game.save(update_fields=['num_of_questions'])
+                return f"Number of games successfully updated to {value}"
+            else:
+                return "Number of games could not be changed"
+        elif command == "set_game_mode":
+            if value == "First" or value == "F":
+                game.game_mode = value
+                game.save(update_fields=['game_mode'])
+                return "Game mode was successfully updated to First"
+            elif value == "Time" or value == "T":
+                game.game_mode = value
+                game.save(update_fields=['game_mode'])
+                return "Game mode was successfully updated to Time"
+
+def GameInfo(chat):
+    instance = TriviaGameInstance.objects.filter(chat=chat)
+    if len(instance) >= 1:
+        game = TriviaGame.objects.filter(id=instance[0].trivia.id)
+        if game[0].game_mode == "F":
+            gameMode = "First"
+        else:
+            gameMode = "Time" 
+        texto = F"Game mode: {gameMode}\n\
+Number of questions: {game[0].num_of_questions}"
+        return texto
+    else:
+        return "No game was found"
 
 def sendPoll(chat_id, question):
     url = f'https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/sendPoll'
@@ -160,3 +214,11 @@ def SavePoll(request, chat, question):
         new_poll.save()
         return new_poll
     return None
+
+def is_integer(n):
+    try:
+        float(n)
+    except ValueError:
+        return False
+    else:
+        return float(n).is_integer()

@@ -1,6 +1,8 @@
 from bot_api.models import Chat, Stats, Question, Poll, TriviaGame, TriviaGameInstance
 
-import requests
+import requests, logging
+
+logger = logging.getLogger('django')
 
 def play_trivia(text, chat, player):
     # Manage Text Parameters
@@ -147,6 +149,8 @@ def sendMessage(chat_id, text='bot response'):
 def SavePoll(request, chat, question):
     request_json = request.json()
     result = request_json.get('result')
+    
+    logger.info(request_json)
 
     if result != None:
         poll_id = result.get('poll').get('id')

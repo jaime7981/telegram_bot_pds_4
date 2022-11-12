@@ -6,12 +6,12 @@ from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-from bot_api.models import Player, Chat, Stats, NumberGame
+from bot_api.models import Player, Chat, Stats, NumberGame, Poll
 
 import logging, requests, json
 
 from bot_api.games.number import play_number
-from bot_api.games.trivia import play_trivia
+from bot_api.games.trivia import play_trivia, PollWinOrResponseLimit
 
 logger = logging.getLogger('django')
 
@@ -42,8 +42,9 @@ def webhook(request):
         request_json = formatInfo(request_data)
 
         if request_json.get('chat_type') == 'poll':
-            vote_count = request_json.get('total_voter_count')
-            logger.info(f'{vote_count} people have voted')
+            poll_id = request_json.get('poll_id')
+            poll = Poll.objects.get(poll_id=poll_id)
+            PollWinOrResponseLimit(request_json, poll)
             return JsonResponse({'success':'post method working'},status=200)
 
         player, chat = getPlayerAndChatOrCreate(request_json)
@@ -110,6 +111,7 @@ def formatInfo(json_request):
         message = json_request.get('my_chat_member')
     if message == None:
         message = json_request.get('poll')
+        formated_json['poll_id'] = message.get('id')
         formated_json['total_voter_count'] = message.get('total_voter_count')
         formated_json['is_closed'] = message.get('is_closed')
         formated_json['chat_type'] = 'poll'

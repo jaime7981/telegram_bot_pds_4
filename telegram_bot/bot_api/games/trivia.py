@@ -23,6 +23,10 @@ def play_trivia(text, chat, player):
                 return 'Answer!'
         return 'Two parameters not implemented'
     elif len(text) == 3:
+        if text[1] == 'set_question_nr':
+            return 'update question number not implemented'
+        elif text[1] == 'set_game_mode':
+            return 'update game mode not implemented'
         return 'Three parameters not implemented'
     elif len(text) == 1:
         return 'TRIVIA GAME\n\
@@ -31,10 +35,17 @@ Commands:\n\
  -start or reset: restarts the game\n\
  -info: Returns the actual parameters of the game\n\
  -poll: Test poll\n\
- -closing poll: Test closing poll 60 secs\n\
+ -closing_poll: Test closing poll 60 secs\n\
+ -set_question_nr: Sets number of questions to play\n\
+ -set_game_mode: first or time\n\
  -end: Finishes the game'
     else:
         return 'Too many parameters'
+
+def PollWinOrResponseLimit(request_json, poll: Poll):
+    chat = poll.chat
+    chat_id = chat.chat_id
+    sendMessage(chat_id, text='Recieved response')
 
 def getRandomQuestion(limit=1):
     base_url = 'https://the-trivia-api.com/api/questions'
@@ -94,6 +105,7 @@ def sendPoll(chat_id, question):
             'question':question_text,
             'options':answer_list,
             'type':'quiz',
+            'is_anonymous':False,
             'correct_option_id':correct_answer_id}
     request = requests.post(url, json=data)
     return request
@@ -119,10 +131,18 @@ def sendClosingPoll(chat_id, question, time=60):
             'question':question_text,
             'options':answer_list,
             'type':'quiz',
+            'is_anonymous':False,
             'open_period':time,
             'correct_option_id':correct_answer_id}
     request = requests.post(url, json=data)
     return request
+
+def sendMessage(chat_id, text='bot response'):
+    url = f'https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/sendMessage'
+    data = {'chat_id':int(chat_id),
+            'text':text}
+    request = requests.post(url, json=data)
+    return request   
 
 def SavePoll(request, chat, question):
     request_json = request.json()

@@ -46,7 +46,7 @@ def webhook(request):
             try:
                 poll = Poll.objects.get(poll_id=poll_id)
             except:
-                return JsonResponse({'error':'model not found'},status=404)
+                return JsonResponse({'error':'model not found'},status=200)
             PollWinOrResponseLimit(request_json, poll)
             return JsonResponse({'success':'post method working'},status=200)
 

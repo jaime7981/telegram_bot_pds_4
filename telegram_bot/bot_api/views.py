@@ -43,7 +43,10 @@ def webhook(request):
 
         if request_json.get('chat_type') == 'poll':
             poll_id = request_json.get('poll_id')
-            poll = Poll.objects.get(poll_id=poll_id)
+            try:
+                poll = Poll.objects.get(poll_id=poll_id)
+            except:
+                return JsonResponse({'error':'model not found'},status=404)
             PollWinOrResponseLimit(request_json, poll)
             return JsonResponse({'success':'post method working'},status=200)
 

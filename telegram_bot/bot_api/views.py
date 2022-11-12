@@ -118,7 +118,7 @@ def formatInfo(json_request):
         return formated_json
     if message == None:
         message = json_request.get('poll_answer')
-        formated_json['poll_id'] = message.get('id')
+        formated_json['poll_id'] = message.get('poll_id')
         formated_json['sender_id'] = message.get('user').get('id')
         formated_json['sender_name'] = message.get('user').get('first_name') + ' ' + message.get('from').get('last_name', '')
         formated_json['option_ids'] = message.get('option_ids')

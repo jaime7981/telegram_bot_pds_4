@@ -149,14 +149,14 @@ def sendMessage(chat_id, text='bot response'):
 def SavePoll(request, chat, question):
     request_json = request.json()
     result = request_json.get('result')
-    
-    logger.info(request_json)
 
     if result != None:
         poll_id = result.get('poll').get('id')
+        correct_option = result.get('poll').get('correct_option_id')
         new_poll = Poll.objects.create(chat=chat,
                                     question=question,
-                                    poll_id=poll_id)
+                                    poll_id=poll_id,
+                                    correct_option=correct_option)
         new_poll.save()
         return new_poll
     return None

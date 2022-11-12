@@ -72,3 +72,4 @@ class Poll(models.Model):
     poll_id = models.BigIntegerField()
     vote_numbers = models.IntegerField(default='0')
     closed = models.BooleanField(default=False)
+    correct_option = models.IntegerField(default=0)

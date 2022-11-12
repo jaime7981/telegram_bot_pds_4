@@ -121,7 +121,6 @@ def formatInfo(json_request):
         message = json_request.get('poll_answer')
         formated_json['poll_id'] = message.get('poll_id')
         formated_json['sender_id'] = message.get('user').get('id')
-        formated_json['sender_name'] = message.get('user').get('first_name') + ' ' + message.get('from').get('last_name', '')
         formated_json['option_ids'] = message.get('option_ids')
         formated_json['chat_type'] = 'poll'
         return formated_json

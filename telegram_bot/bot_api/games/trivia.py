@@ -1,4 +1,4 @@
-from bot_api.models import Chat, Stats, Question, Poll, TriviaGame, TriviaGameInstance
+from bot_api.models import Chat, Stats, Question, Poll, TriviaGame, TriviaGameInstance, Player
 
 import requests, logging
 
@@ -6,16 +6,19 @@ logger = logging.getLogger('django')
 
 def play_trivia(text, chat, player):
     # Manage Text Parameters
-    trivia_intance = TriviaGameInstance.objects.filter(chat=chat)
-    if len(trivia_intance) < 1:
-        #Create new instance and trivia
-        new_game = TriviaGame.objects.create(game_state="W",game_mode="F",question=None)
+    
+    new_triviaGame = TriviaGame.objects.filter(chat=chat)
+    if len(new_triviaGame) < 1:
+        new_game = TriviaGame.objects.create(game_state="W",game_mode="F",question=None,chat=chat)
         new_game.save()
-        new_instance = TriviaGameInstance.objects.create(player=player,chat=chat,trivia=new_game)
+    
+    trivia_intance = TriviaGameInstance.objects.filter(chat=chat).filter(player=player)
+    if len(trivia_intance) < 1:
+        new_triviaGame = TriviaGame.objects.filter(chat=chat)[0]
+        new_instance = TriviaGameInstance.objects.create(player=player,chat=chat,trivia=new_triviaGame)
         new_instance.save()
         
     if len(text) == 2:
-        
         if text[1] == 'poll':
             question_from_api = getRandomQuestion()
             questions = parseAndSaveQuestions(question_from_api)
@@ -33,7 +36,18 @@ def play_trivia(text, chat, player):
                 SavePoll(request, chat, question)
                 return 'Answer!'
         elif text[1] == 'start':
-            pass
+            question_from_api = getRandomQuestion()
+            questions = parseAndSaveQuestions(question_from_api)
+            if questions != None and len(questions) > 0:
+                question = questions[0]
+                sendMessage(chat.chat_id,"The quiz has begun! Time to answer")
+                triviaGame = TriviaGame.objects.filter(chat=chat)[0]
+                texto = f"Game {int(triviaGame.answered_questions)+1} out of {triviaGame.num_of_questions}"
+                sendMessage(chat.chat_id,texto)
+                request = sendPoll(chat.chat_id, question)
+                poll = SavePoll(request, chat, question)
+                AssingPoll(chat,poll)
+                return "The quiz has begun! Time to answer"
         elif text[1] == 'info':
             message = GameInfo(chat=chat)
             return message
@@ -60,7 +74,74 @@ Commands:\n\
     else:
         return 'Too many parameters'
 
-
+def checkPlayerAnswer(poll, option_id, user_id):
+    if option_id is not None and user_id is not None:
+        games = TriviaGame.objects.filter(chat=poll.chat)[0]
+        if games.game_state == "W":
+            print("comparar", poll.correct_option,option_id)
+            if poll.correct_option == option_id[0] and poll.closed == False:
+                #ASIGNAR PUNTOS AL GANADOR
+                player = Player.objects.filter(user_id=user_id)[0]
+                sendMessage(poll.chat.chat_id,f"The player {player.user_name} got the correct answer! and got +1 point")
+                
+                #ACTULIAZAR DATOS
+                poll.closed = True
+                poll.save(update_fields=['closed'])
+                
+                instance = TriviaGameInstance.objects.filter(chat=poll.chat,player=player)[0]
+                instance.points = str(int(instance.points) + 1)
+                instance.save(update_fields=['points'])
+                
+                games = TriviaGame.objects.filter(id=instance.trivia.id)[0]
+                games.answered_questions += 1
+                games.save(update_fields=['answered_questions'])
+                
+                
+                if int(games.answered_questions) >= int(games.num_of_questions):
+                    games.game_state = "B"
+                    sendMessage(poll.chat.chat_id,f"There are no more Quizes")
+                else:
+                    sendMessage(poll.chat.chat_id,f"Next trivia!!")  
+                    question_from_api = getRandomQuestion()
+                    questions = parseAndSaveQuestions(question_from_api)
+                    if questions != None and len(questions) > 0:
+                        question = questions[0]
+                        request = sendPoll(poll.chat.chat_id, question)
+                        poll = SavePoll(request, poll.chat, question)
+                        AssingPoll(poll.chat,poll)
+                games.save(update_fields=['game_state'])
+                print("Funciono")
+            else:
+                poll.vote_numbers = poll.vote_numbers + 1
+                poll.save(update_fields=['vote_numbers'])
+                intances = TriviaGameInstance.objects.filter(chat=poll.chat)
+                
+                if int(poll.vote_numbers) == int(len(intances)):
+                    sendMessage(poll.chat.chat_id,"No more available players to answer")
+                    games = TriviaGame.objects.filter(chat=poll.chat)[0]
+                    games.answered_questions = str(int(games.answered_questions) + 1)
+                    games.save(update_fields=['answered_questions'])
+                    
+                    if int(games.answered_questions) >= int(games.num_of_questions):
+                        games.game_state = "B"
+                        sendMessage(poll.chat.chat_id,f"There are no more Quizes")
+                    else:
+                        sendMessage(poll.chat.chat_id,f"Next trivia!!")  
+                        question_from_api = getRandomQuestion()
+                        questions = parseAndSaveQuestions(question_from_api)
+                        if questions != None and len(questions) > 0:
+                            question = questions[0]
+                            request = sendPoll(poll.chat.chat_id, question)
+                            poll = SavePoll(request, poll.chat, question)
+                            AssingPoll(poll.chat,poll)
+                    games.save(update_fields=['game_state'])
+                    
+                poll.closed = True
+                poll.save(update_fields=['closed'])
+        else:
+            sendMessage(poll.chat.chat_id,f"This Game is already blocked, start a new game or reset")
+    else:
+        return None
 
 def PollWinOrResponseLimit(request_json, poll: Poll):
     chat = poll.chat
@@ -105,7 +186,6 @@ def parseAndSaveQuestions(json_response):
 
 def UpdateGameParams(chat, value, command):
     instance = TriviaGameInstance.objects.filter(chat=chat)
-    print(instance)
     if len(instance) >= 1:
         games = TriviaGame.objects.filter(id=instance[0].trivia.id)
         game = games[0]
@@ -214,6 +294,14 @@ def SavePoll(request, chat, question):
         new_poll.save()
         return new_poll
     return None
+
+def AssingPoll(chat, poll):
+    instance = TriviaGameInstance.objects.filter(chat=chat)
+    if len(instance) >= 1:
+        games = TriviaGame.objects.filter(id=instance[0].trivia.id)[0]
+        games.poll = poll
+        games.save(update_fields=['poll'])
+    pass
 
 def is_integer(n):
     try:

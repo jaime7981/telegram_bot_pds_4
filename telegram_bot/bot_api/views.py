@@ -11,7 +11,7 @@ from bot_api.models import Player, Chat, Stats, NumberGame, Poll
 import logging, requests, json
 
 from bot_api.games.number import play_number
-from bot_api.games.trivia import play_trivia, PollWinOrResponseLimit
+from bot_api.games.trivia import play_trivia, PollWinOrResponseLimit, checkPlayerAnswer
 
 logger = logging.getLogger('django')
 
@@ -40,16 +40,22 @@ def webhook(request):
 
         logger.info(request_data)
         request_json = formatInfo(request_data)
-
+        
+        print("request",request_json)
         if request_json.get('chat_type') == 'poll':
+            print("nya")
             poll_id = request_json.get('poll_id')
+            option_id = request_json.get('option_ids')
+            sender_id = request_json.get('sender_id')
+            
             try:
                 poll = Poll.objects.get(poll_id=poll_id)
             except:
                 return JsonResponse({'error':'model not found'},status=200)
+            checkPlayerAnswer(poll, option_id, sender_id)
             PollWinOrResponseLimit(request_json, poll)
             return JsonResponse({'success':'post method working'},status=200)
-
+    
         player, chat = getPlayerAndChatOrCreate(request_json)
         if player == None or chat == None:
             chat_id = int(request_json.get('chat_id'))

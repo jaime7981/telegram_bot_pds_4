@@ -6,17 +6,8 @@ logger = logging.getLogger('django')
 
 def play_trivia(text, chat, player):
     # Manage Text Parameters
-    
-    new_triviaGame = TriviaGame.objects.filter(chat=chat)
-    if len(new_triviaGame) < 1:
-        new_game = TriviaGame.objects.create(game_state="W",game_mode="F",question=None,chat=chat)
-        new_game.save()
-    
-    trivia_intance = TriviaGameInstance.objects.filter(chat=chat).filter(player=player)
-    if len(trivia_intance) < 1:
-        new_triviaGame = TriviaGame.objects.filter(chat=chat)[0]
-        new_instance = TriviaGameInstance.objects.create(player=player,chat=chat,trivia=new_triviaGame)
-        new_instance.save()
+    newGameIfNotExists(chat)
+    newTriviaGameInstance(chat, player)
         
     if len(text) == 2:
         if text[1] == 'poll':
@@ -66,7 +57,9 @@ Commands:\n\
 
 def checkPlayerAnswer(poll, option_id, user_id):
     if option_id is not None and user_id is not None:
-        games = TriviaGame.objects.filter(chat=poll.chat)[0]
+        player = Player.objects.filter(user_id=user_id)[0]
+        newTriviaGameInstance(poll.chat, player)
+        games = TriviaGame.objects.filter(chat=poll.chat.chat_id)[0]
         if CheckIfGameEndedOrClosed(poll):
             if poll.correct_option == option_id[0] and poll.closed == False: #Si le achunto
                 #ASIGNAR PUNTOS AL GANADOR
@@ -77,7 +70,7 @@ def checkPlayerAnswer(poll, option_id, user_id):
                 poll.closed = True
                 poll.save(update_fields=['closed'])
                 
-                instance = TriviaGameInstance.objects.filter(chat=poll.chat,player=player)[0]
+                instance = TriviaGameInstance.objects.filter(chat=poll.chat.chat_id,player=player)[0]
                 instance.points = str(int(instance.points) + 1)
                 instance.save(update_fields=['points'])
                 
@@ -93,11 +86,11 @@ def checkPlayerAnswer(poll, option_id, user_id):
             else: #NO le achunto
                 poll.vote_numbers = poll.vote_numbers + 1
                 poll.save(update_fields=['vote_numbers'])
-                intances = TriviaGameInstance.objects.filter(chat=poll.chat)
+                intances = TriviaGameInstance.objects.filter(chat=poll.chat.chat_id)
                 
                 if int(poll.vote_numbers) == int(len(intances)):
                     sendMessage(poll.chat.chat_id,"No more available players to answer")
-                    games = TriviaGame.objects.filter(chat=poll.chat)[0]
+                    games = TriviaGame.objects.filter(chat=poll.chat.chat_id)[0]
                     games.answered_questions = str(int(games.answered_questions) + 1)
                     games.save(update_fields=['answered_questions'])
                     
@@ -114,6 +107,31 @@ def checkPlayerAnswer(poll, option_id, user_id):
             sendMessage(poll.chat.chat_id,f"This Game is already blocked, start a new game or reset")
     else:
         return None
+
+def newGameIfNotExists(chat):
+    new_triviaGame = TriviaGame.objects.filter(chat=chat.chat_id)
+    text = f"cantidad {len(new_triviaGame)}"
+    logger.info(text)
+    if int(len(new_triviaGame)) < 1:
+        new_game = TriviaGame.objects.create(game_state="W",game_mode="F",question=None,chat=chat.chat_id)
+        new_game.save()
+
+def newTriviaGameInstance(chat, player):
+    
+    text = f"id chat {chat.chat_id}"
+    logger.info(text)
+    
+    trivia_intance = TriviaGameInstance.objects.filter(chat=chat.chat_id).filter(player=player)
+    text = f"largo {len(trivia_intance)}"
+    logger.info(text)
+    prueba = TriviaGameInstance.objects.filter(chat=chat.chat_id)
+    text = f"largo t {len(prueba)}"
+    logger.info(text)
+    if int(len(trivia_intance)) < 1:
+        new_triviaGame = TriviaGame.objects.filter(chat=chat.chat_id)[0]
+        new_instance = TriviaGameInstance.objects.create(player=player,chat=chat.chat_id,trivia=new_triviaGame)
+        new_instance.save()
+    
 
 def PollWinOrResponseLimit(request_json, poll: Poll):
     chat = poll.chat
@@ -136,7 +154,7 @@ def getRandomQuestion(limit=1):
             counter += 1
 
 def CheckIfGameEndedOrClosed(poll):
-    game = TriviaGame.objects.filter(chat=poll.chat)[0]
+    game = TriviaGame.objects.filter(chat=poll.chat.chat_id)[0]
     if game.game_state == "B" or int(game.num_of_questions) <= game.answered_questions:
         game.game_state = "B"
         game.save(update_fields=['game_state'])
@@ -146,7 +164,7 @@ def CheckIfGameEndedOrClosed(poll):
 
 def NextTrivia(poll):
     sendMessage(poll.chat.chat_id,f"Next trivia!!")
-    triviaGame = TriviaGame.objects.filter(chat=poll.chat)[0]
+    triviaGame = TriviaGame.objects.filter(chat=poll.chat.chat_id)[0]
     question_from_api = getRandomQuestion()
     questions = parseAndSaveQuestions(question_from_api)
     if questions != None and len(questions) > 0:
@@ -163,7 +181,7 @@ def StartOrResetGame(chat):
     if questions != None and len(questions) > 0:
         question = questions[0]
         sendMessage(chat.chat_id,"The quiz has begun! Time to answer")
-        triviaGame = TriviaGame.objects.filter(chat=chat)[0]
+        triviaGame = TriviaGame.objects.filter(chat=chat.chat_id)[0]
         triviaGame.answered_questions = 0
         triviaGame.game_state = "W"
         triviaGame.save(update_fields=['answered_questions','game_state'])
@@ -199,7 +217,7 @@ def parseAndSaveQuestions(json_response):
     return None
 
 def UpdateGameParams(chat, value, command):
-    instance = TriviaGameInstance.objects.filter(chat=chat)
+    instance = TriviaGameInstance.objects.filter(chat=chat.chat_id)
     if len(instance) >= 1:
         games = TriviaGame.objects.filter(id=instance[0].trivia.id)
         game = games[0]
@@ -221,7 +239,7 @@ def UpdateGameParams(chat, value, command):
                 return "Game mode was successfully updated to Time"
 
 def GameInfo(chat):
-    instance = TriviaGameInstance.objects.filter(chat=chat)
+    instance = TriviaGameInstance.objects.filter(chat=chat.chat_id)
     if len(instance) >= 1:
         game = TriviaGame.objects.filter(id=instance[0].trivia.id)
         if game[0].game_mode == "F":
@@ -310,7 +328,7 @@ def SavePoll(request, chat, question):
     return None
 
 def AssingPoll(chat, poll):
-    instance = TriviaGameInstance.objects.filter(chat=chat)
+    instance = TriviaGameInstance.objects.filter(chat=chat.chat_id)
     if len(instance) >= 1:
         games = TriviaGame.objects.filter(id=instance[0].trivia.id)[0]
         games.poll = poll

@@ -60,7 +60,7 @@ class TriviaGame(models.Model):
         ('T', 'Time')
     )
     
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, default=None, null=True)
+    chat = models.IntegerField(null=True, default=None)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, default=None, null=True)
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE, default=None, null=True)
     game_state = models.CharField(default='W', max_length=1, choices=GAME_STATES)
@@ -70,7 +70,7 @@ class TriviaGame(models.Model):
 
 class TriviaGameInstance(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    chat = models.IntegerField(null=True, default=None)
     trivia = models.ForeignKey(TriviaGame, on_delete=models.CASCADE, default=None, null=True)
 
     points = models.IntegerField(default=0)

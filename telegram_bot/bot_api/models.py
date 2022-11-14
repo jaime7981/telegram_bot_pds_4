@@ -41,6 +41,14 @@ class Question(models.Model):
     #ans4 = models.CharField(default=None, max_length=100)
     correct = models.CharField(max_length=100)
 
+class Poll(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, default=None)
+    poll_id = models.BigIntegerField()
+    vote_numbers = models.IntegerField(default='0')
+    closed = models.BooleanField(default=False)
+    correct_option = models.IntegerField(default=0)
+
 class TriviaGame(models.Model):
     GAME_STATES = (
         ('W', 'Write'),
@@ -51,9 +59,10 @@ class TriviaGame(models.Model):
         ('F', 'First'),
         ('T', 'Time')
     )
-
+    
+    chat = models.IntegerField(null=True, default=None)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, default=None, null=True)
-
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, default=None, null=True)
     game_state = models.CharField(default='W', max_length=1, choices=GAME_STATES)
     game_mode = models.CharField(default='F', max_length=1, choices=GAME_MODES)
     num_of_questions = models.IntegerField(default='1')
@@ -61,15 +70,9 @@ class TriviaGame(models.Model):
 
 class TriviaGameInstance(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    trivia = models.ForeignKey(TriviaGame, on_delete=models.CASCADE)
+    chat = models.IntegerField(null=True, default=None)
+    trivia = models.ForeignKey(TriviaGame, on_delete=models.CASCADE, default=None, null=True)
 
     points = models.IntegerField(default=0)
 
-class Poll(models.Model):
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, default=None)
-    poll_id = models.BigIntegerField()
-    vote_numbers = models.IntegerField(default='0')
-    closed = models.BooleanField(default=False)
-    correct_option = models.IntegerField(default=0)
+

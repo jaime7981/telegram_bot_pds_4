@@ -190,7 +190,7 @@ def get_stats(text, player, chat):
     #logger.info(text)
     if len(text) == 1:
         player_stats = Stats.objects.filter(player=player.user_id)
-        if player_stats is not None:
+        if len(player_stats) >= 1:
             logger.info(player_stats[0].won)
             return f"The player {player.user_name} has played {player_stats[0].played} games, won {player_stats[0].won} games, and lost {player_stats[0].lost} games"
         else:

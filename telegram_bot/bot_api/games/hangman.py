@@ -154,7 +154,7 @@ def GetRandomWord():
     url = 'https://api.api-ninjas.com/v1/randomword'
     response = requests.get(url, headers={'X-Api-Key': 'YOUR_API_KEY'})
     if response.status_code == requests.codes.ok:
-        return response.json().get('word', 'false')
+        return response.json().get('word', 'false').lower()
     else:
         return 'false'
 

@@ -113,8 +113,12 @@ def GetRandomWord():
 
 def WordToRegexStart(word):
     final_string = ''
-    for leter in word:
-        final_string += '_ '
+    n = len(word)
+    for position in range(n):
+        if position == n - 1:
+            final_string += '_'
+        else:
+            final_string += '_ '
     final_string.pop()
     return final_string
 

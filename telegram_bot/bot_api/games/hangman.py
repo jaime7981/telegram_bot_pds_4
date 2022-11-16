@@ -68,10 +68,12 @@ def GuessWord(word, chat, player):
             AddPointsToPlayer(chat, player, 3)
             winner, points = GetWinner(chat)
             if len(winner) == 1:
-                return f'{player.user_name} you guess the word! {word}\n +3 points for completing the answer\n The winner is {winner[0]} with {points} points'
+                return f'{player.user_name} you guess the word! {word}\n +3 points for completing the answer\n The winner is {winner[0].user_name} with {points} points'
             elif len(winner) > 1:
-                winners = ' '
-                return f'{player.user_name} you guess the word! {word}\n +3 points for completing the answer\n The winners are {winners.join(winner)} with {points} points'
+                winners = ''
+                for player in winner:
+                    winners += player.user_name + ' '
+                return f'{player.user_name} you guess the word! {word}\n +3 points for completing the answer\n The winners are {winners} with {points} points'
             else:
                 return f'{player.user_name} you guess the word! {word}\n +3 points for completing the answer'
         else:
@@ -97,10 +99,32 @@ def GetWinner(chat: Chat):
         for instance in game_instances:
             if instance.points > max_points:
                 max_points = instance.points
-                winner = [instance.player.user_name]
+                winner = [instance.player]
             elif instance.points == max_points:
-                winner.append(instance.player.user_name)
+                winner.append(instance.player)
+
+        for instance in game_instances:
+            if instance.player in winner:
+                UpdateStats(winner[0])
+            else:
+                UpdateStats(instance.player, False)
         return winner, max_points
+
+def UpdateStats(player, win=True):
+    try:
+        stats = Stats.objects.get(player=player)
+    except:
+        stats = Stats.objects.create(player=player)
+        stats.save()
+
+    if win:
+        stats.played = stats.played + 1
+        stats.won = stats.won + 1
+        stats.save(update_fields=['played', 'won'])
+    else:
+        stats.played = stats.played + 1
+        stats.lost = stats.lost + 1
+        stats.save(update_fields=['played', 'won'])
 
 def newGameIfNotExists(chat):
     new_game = Hangman.objects.filter(chat=chat.chat_id)

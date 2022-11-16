@@ -12,11 +12,12 @@ import logging, requests, json
 
 from bot_api.games.number import play_number
 from bot_api.games.trivia import play_trivia, PollWinOrResponseLimit, checkPlayerAnswer
+from bot_api.games.hangman import play_hangman
 
 logger = logging.getLogger('django')
 
 bot_commands = ['/start', '/games', '/stats', '/welcome']
-game_list = ['/number', '/trivia', '/custom']
+game_list = ['/number', '/trivia', '/hangman']
 
 # Create your views here.
 def test_page(request):
@@ -41,9 +42,7 @@ def webhook(request):
         logger.info(request_data)
         request_json = formatInfo(request_data)
         
-        print("request",request_json)
         if request_json.get('chat_type') == 'poll':
-            print("nya")
             poll_id = request_json.get('poll_id')
             option_id = request_json.get('option_ids')
             sender_id = request_json.get('sender_id')
@@ -90,6 +89,8 @@ def webhook(request):
                     message_to_send = play_number(text, chat, player)
                 elif command == '/trivia':
                     message_to_send = play_trivia(text, chat, player)
+                elif command == '/hangman':
+                    message_to_send = play_hangman(text, chat, player)
                 else:
                     message_to_send = 'Game Not Implemented'
             else:

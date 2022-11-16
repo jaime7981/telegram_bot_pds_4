@@ -75,4 +75,24 @@ class TriviaGameInstance(models.Model):
 
     points = models.IntegerField(default=0)
 
+class Hangman(models.Model):
+    GAME_STATES = (
+        ('W', 'Write'),
+        ('B', 'Block')
+    )
+
+    chat = models.BigIntegerField(null=True, default=None)
+    game_state = models.CharField(default='W', max_length=1, choices=GAME_STATES)
+
+    word_solution = models.CharField(default=None)
+    word_progress = models.CharField(default=None)
+
+    lives = models.IntegerField(default='10')
+
+class HangmanGameInstance(models.Model):
+    chat = models.BigIntegerField(null=True, default=None)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    hangman = models.ForeignKey(Hangman, on_delete=models.CASCADE, default=None, null=True)
+
+    points = models.IntegerField(default=0)
 

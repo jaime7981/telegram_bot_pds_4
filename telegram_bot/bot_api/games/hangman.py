@@ -201,6 +201,12 @@ def StartOrResetGame(chat):
                                     'word_solution',
                                     'word_progress',
                                     'lives_counter'])
+
+        hangman_instances = HangmanGameInstance.objects.filter(hangman=hangman)
+        for instance in hangman_instances:
+            instance.points = 0
+            instance.save(update_fields=['points'])
+        
         return f'Start guessing\n {word_progress}'
     return 'Error while starting the game'
 

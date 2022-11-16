@@ -14,7 +14,10 @@ def play_hangman(text, chat, player):
             return StartOrResetGame(chat)
         elif text[1] == 'info':
             return GameInfo(chat=chat)
-        return 'Two parameters not implemented'
+        elif len(text[1]) == 1:
+            return OneLetter(text[1], chat, player)
+        else:
+            return GuessWord(text[1], chat, player)
     elif len(text) == 3:
         if text[1] == 'set_lives':
             return UpdateGameParams(chat, text[2], text[1])
@@ -29,6 +32,45 @@ Commands:\n\
  -end: Finishes the game'
     else:
         return 'Too many parameters'
+
+def OneLetter(letter, chat, player):
+    if CheckIfGameEndedOrClosed(chat) == False:
+        return f'{player.user_name} out of lives or game is closed'
+    
+    game = Hangman.objects.filter(chat=chat.chat_id)
+    if len(game) >= 1:
+        game = game[0]
+
+        if letter in game.word_solution:
+            new_progress = LetterToRegexProgress(game.word_solution, 
+                                                 game.word_progress, 
+                                                 letter)
+            game.word_progress = new_progress
+            game.save(update_fields=['word_progress'])
+            return f'Letter {letter} is contained in the word\n +1 point for letter\n {new_progress}'
+        else:
+            game.lives_counter = game.lives_counter - 1
+            game.save(update_fields=['lives_counter'])
+            return f'{player.user_name} bad Guess {game.lives_counter} lives left\n {game.word_progress}'
+    return f'letter {letter}'
+
+def GuessWord(word, chat, player):
+    if CheckIfGameEndedOrClosed(chat) == False:
+        return f'{player.user_name} out of lives or game is closed'
+    
+    game = Hangman.objects.filter(chat=chat.chat_id)
+    if len(game) >= 1:
+        game = game[0]
+        if game.word_solution == word:
+            game.game_state = 'B'
+            game.save(update_fields=['game_state'])
+            return f'{player.user_name} you guess the word! {word}\n +5 points for completing the answer'
+        else:
+            game.lives_counter = game.lives_counter - 1
+            game.save(update_fields=['lives_counter'])
+            return f'{player.user_name} bad Guess {game.lives_counter} lives left\n {game.word_progress}'
+
+    return f'trying hard guess {word}'
 
 def newGameIfNotExists(chat):
     new_game = Hangman.objects.filter(chat=chat.chat_id)
@@ -56,7 +98,7 @@ def CheckIfGameEndedOrClosed(chat):
     game = Hangman.objects.filter(chat=chat.chat_id)
     if len(game) >= 1:
         game = game[0]
-        if game.game_state == "B" or int(game.lives) <= 0:
+        if game.game_state == "B" or int(game.lives_counter) <= 0:
             game.game_state = "B"
             game.save(update_fields=['game_state'])
             return False
@@ -74,7 +116,9 @@ def UpdateGameParams(chat, value, command):
         if command == "set_lives":
             if is_integer(value) and int(value) >= 1:
                 game.lives = value
-                game.save(update_fields=['lives'])
+                game.lives_counter = value
+                game.save(update_fields=['lives'
+                                         'lives_counter'])
                 return f"Number of lives successfully updated to {value}"
     return "Number of games could not be changed"
 
@@ -98,10 +142,12 @@ def StartOrResetGame(chat):
         hangman.game_state = "W"
         hangman.word_solution = word_from_api
         hangman.word_progress = word_progress
+        hangman.lives_counter = hangman.lives
         hangman.save(update_fields=['game_state',
                                     'word_solution',
-                                    'word_progress'])
-        return f'Start guessing\n-> {word_progress} <-'
+                                    'word_progress',
+                                    'lives_counter'])
+        return f'Start guessing\n {word_progress}'
     return 'Error while starting the game'
 
 def GetRandomWord():
@@ -120,6 +166,23 @@ def WordToRegexStart(word):
             final_string += '_'
         else:
             final_string += '_ '
+    return final_string
+
+def LetterToRegexProgress(solution, progress, letter):
+    progress_list = progress.split()
+    final_string = ''
+    points = 0
+
+    for progress_letter, solution_letter in zip(progress_list,solution):
+        if progress_letter != '_':
+            final_string += f'{progress_letter} '
+        else:
+            if solution_letter == letter:
+                final_string += f'{letter} '
+                points += 1
+            else:
+                final_string += '_ '
+
     return final_string
 
 def is_integer(n):

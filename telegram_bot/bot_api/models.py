@@ -87,7 +87,8 @@ class Hangman(models.Model):
     word_solution = models.CharField(default=None, max_length=100)
     word_progress = models.CharField(default=None, max_length=100)
 
-    lives = models.IntegerField(default='10')
+    lives = models.IntegerField(default=10)
+    lives_counter = models.IntegerField(default=10)
 
 class HangmanGameInstance(models.Model):
     chat = models.BigIntegerField(null=True, default=None)

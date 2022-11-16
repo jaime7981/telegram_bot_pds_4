@@ -34,7 +34,7 @@ class NumberGame(models.Model):
 
 
 class Question(models.Model):
-    question = models.CharField(max_length=300)
+    question = models.CharField(max_length=500)
     ans1 = models.CharField(max_length=100)
     ans2 = models.CharField(max_length=100)
     ans3 = models.CharField(max_length=100)
@@ -84,8 +84,8 @@ class Hangman(models.Model):
     chat = models.BigIntegerField(null=True, default=None)
     game_state = models.CharField(default='W', max_length=1, choices=GAME_STATES)
 
-    word_solution = models.CharField(default=None)
-    word_progress = models.CharField(default=None)
+    word_solution = models.CharField(default=None, max_length=100)
+    word_progress = models.CharField(default=None, max_length=100)
 
     lives = models.IntegerField(default='10')
 

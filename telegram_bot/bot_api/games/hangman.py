@@ -32,8 +32,13 @@ Commands:\n\
 
 def newGameIfNotExists(chat):
     new_game = Hangman.objects.filter(chat=chat.chat_id)
+    word_from_api = GetRandomWord()
+    word_progress = WordToRegexStart(word_from_api)
     if len(new_game) < 1:
-        new_game = Hangman.objects.create(game_state="W",chat=chat.chat_id)
+        new_game = Hangman.objects.create(game_state="W",
+                                          word_solution=word_from_api,
+                                          word_progress=word_progress,
+                                          chat=chat.chat_id)
         new_game.save()
 
 def newHangmanInstance(chat, player):
@@ -85,7 +90,7 @@ def GameInfo(chat):
 def StartOrResetGame(chat):
     word_from_api = GetRandomWord()
     word_progress = WordToRegexStart(word_from_api)
-    hangman = Hangman.objects.filter(chat=chat.chat_id)[0]
+    hangman = Hangman.objects.filter(chat=chat.chat_id)
     
     if len(hangman) >= 1:
         hangman = hangman[0]

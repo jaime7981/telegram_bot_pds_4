@@ -117,7 +117,7 @@ def UpdateGameParams(chat, value, command):
             if is_integer(value) and int(value) >= 1:
                 game.lives = value
                 game.lives_counter = value
-                game.save(update_fields=['lives'
+                game.save(update_fields=['lives',
                                          'lives_counter'])
                 return f"Number of lives successfully updated to {value}"
     return "Number of games could not be changed"

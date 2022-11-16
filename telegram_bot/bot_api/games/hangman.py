@@ -42,11 +42,12 @@ def OneLetter(letter, chat, player):
         game = game[0]
 
         if letter in game.word_solution:
-            new_progress = LetterToRegexProgress(game.word_solution, 
-                                                 game.word_progress, 
-                                                 letter)
+            new_progress, points = LetterToRegexProgress(game.word_solution, 
+                                                         game.word_progress, 
+                                                         letter)
             game.word_progress = new_progress
             game.save(update_fields=['word_progress'])
+            AddPointsToPlayer(chat, player, points)
             return f'Letter {letter} is contained in the word\n +1 point for letter\n {new_progress}'
         else:
             game.lives_counter = game.lives_counter - 1
@@ -64,13 +65,42 @@ def GuessWord(word, chat, player):
         if game.word_solution == word:
             game.game_state = 'B'
             game.save(update_fields=['game_state'])
-            return f'{player.user_name} you guess the word! {word}\n +5 points for completing the answer'
+            AddPointsToPlayer(chat, player, 3)
+            winner, points = GetWinner(chat)
+            if len(winner) == 1:
+                return f'{player.user_name} you guess the word! {word}\n +3 points for completing the answer\n The winner is {winner[0]} with {points} points'
+            elif len(winner) > 1:
+                winners = ' '
+                return f'{player.user_name} you guess the word! {word}\n +3 points for completing the answer\n The winners are {winners.join(winner)} with {points} points'
+            else:
+                return f'{player.user_name} you guess the word! {word}\n +3 points for completing the answer'
         else:
             game.lives_counter = game.lives_counter - 1
             game.save(update_fields=['lives_counter'])
             return f'{player.user_name} bad Guess {game.lives_counter} lives left\n {game.word_progress}'
 
     return f'trying hard guess {word}'
+
+def AddPointsToPlayer(chat: Chat, player: Player, points: int):
+    game_instance = HangmanGameInstance.objects.filter(chat=chat.chat_id).filter(player=player)
+    if len(game_instance) >= 1:
+        game_instance = game_instance[0]
+        game_instance.points = game_instance.points + points
+        game_instance.save(update_fields=['points'])
+
+def GetWinner(chat: Chat):
+    game_instances = HangmanGameInstance.objects.filter(chat=chat.chat_id)
+    if len(game_instances) >= 1:
+        winner = []
+        max_points = 0
+
+        for instance in game_instances:
+            if instance.points > max_points:
+                max_points = instance.points
+                winner = [instance.player.user_name]
+            elif instance.points == max_points:
+                winner.append(instance.player.user_name)
+        return winner, max_points
 
 def newGameIfNotExists(chat):
     new_game = Hangman.objects.filter(chat=chat.chat_id)
@@ -183,7 +213,7 @@ def LetterToRegexProgress(solution, progress, letter):
             else:
                 final_string += '_ '
 
-    return final_string
+    return final_string, points
 
 def is_integer(n):
     try:

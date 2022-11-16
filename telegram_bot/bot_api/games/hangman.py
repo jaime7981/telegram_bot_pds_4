@@ -81,7 +81,7 @@ def UpdateGameParams(chat, value, command):
 def GameInfo(chat):
     instance = HangmanGameInstance.objects.filter(chat=chat.chat_id)
     if len(instance) >= 1:
-        game = Hangman.objects.filter(id=instance[0].trivia.id)
+        game = Hangman.objects.filter(id=instance[0].hangman.id)
         if len(game) >= 1:
             texto = F"Number of lives: {game[0].lives}"
             return texto

@@ -89,6 +89,7 @@ def GameInfo(chat):
 
 def StartOrResetGame(chat):
     word_from_api = GetRandomWord()
+    logger.info(f'Answer: {word_from_api}')
     word_progress = WordToRegexStart(word_from_api)
     hangman = Hangman.objects.filter(chat=chat.chat_id)
     
@@ -100,7 +101,7 @@ def StartOrResetGame(chat):
         hangman.save(update_fields=['game_state',
                                     'word_solution',
                                     'word_progress'])
-        return f'Start guessing {word_progress}'
+        return f'Start guessing\n-> {word_progress} <-'
     return 'Error while starting the game'
 
 def GetRandomWord():

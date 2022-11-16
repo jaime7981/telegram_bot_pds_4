@@ -119,7 +119,6 @@ def WordToRegexStart(word):
             final_string += '_'
         else:
             final_string += '_ '
-    final_string.pop()
     return final_string
 
 def is_integer(n):

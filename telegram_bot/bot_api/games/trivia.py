@@ -2,7 +2,42 @@ from bot_api.models import Chat, Stats, Question, Poll, TriviaGame, TriviaGameIn
 
 import requests, logging
 
+import time as timer
+import threading
+
 logger = logging.getLogger('django')
+
+
+timers_list = []
+a = "xdafj"
+
+def checkPollTimersThread():
+    while(True):
+        boolean, poll_id = compareLista()
+        if boolean:
+            NextTriviaTimer(poll_id=poll_id)
+            listPop()
+    
+    
+def compareLista():
+    global timers_list
+    lista = timers_list[:]
+    if int(len(lista)) >= 1: 
+        poll_id, time = lista[0]
+        current_time = int(timer.time())
+        if current_time >= int(time):
+            return True, poll_id
+        else:
+            return False, 0
+    return False, 0
+    
+def listPop():
+    global timers_list
+    timers_list.pop(0)
+
+th = threading.Thread(target=checkPollTimersThread)
+# Start the thread
+th.start()
 
 def play_trivia(text, chat, player):
     # Manage Text Parameters
@@ -60,56 +95,91 @@ def checkPlayerAnswer(poll, option_id, user_id):
         player = Player.objects.filter(user_id=user_id)[0]
         newTriviaGameInstance(poll.chat, player)
         games = TriviaGame.objects.filter(chat=poll.chat.chat_id)[0]
-        if CheckIfGameEndedOrClosed(poll):
-            if poll.correct_option == option_id[0] and poll.closed == False: #Si le achunto
-                #ASIGNAR PUNTOS AL GANADOR
-                player = Player.objects.filter(user_id=user_id)[0]
-                sendMessage(poll.chat.chat_id,f"The player {player.user_name} got the correct answer! and got +1 point")
-                
-                #ACTULIAZAR DATOS
-                poll.closed = True
-                poll.save(update_fields=['closed'])
-                
-                instance = TriviaGameInstance.objects.filter(chat=poll.chat.chat_id,player=player)[0]
-                instance.points = str(int(instance.points) + 1)
-                instance.save(update_fields=['points'])
-                
-                games = TriviaGame.objects.filter(id=instance.trivia.id)[0]
-                games.answered_questions += 1
-                games.save(update_fields=['answered_questions'])
-                
-                if CheckIfGameEndedOrClosed(poll):
-                    NextTrivia(poll)
-                else:
-                    sendMessage(poll.chat.chat_id,f"There are no more Quizes")
-                    endGame(poll.chat)
-                
-            else: #NO le achunto
-                poll.vote_numbers = poll.vote_numbers + 1
-                poll.save(update_fields=['vote_numbers'])
-                intances = TriviaGameInstance.objects.filter(chat=poll.chat.chat_id)
-                
-                if int(poll.vote_numbers) == int(len(intances)):
-                    sendMessage(poll.chat.chat_id,"No more available players to answer")
-                    games = TriviaGame.objects.filter(chat=poll.chat.chat_id)[0]
-                    games.answered_questions = str(int(games.answered_questions) + 1)
-                    games.save(update_fields=['answered_questions'])
+        if games.game_mode == "F":
+            if CheckIfGameEndedOrClosed(poll):
+                if poll.correct_option == option_id[0] and poll.closed == False: #Si le achunto
+                    #ASIGNAR PUNTOS AL GANADOR
+                    player = Player.objects.filter(user_id=user_id)[0]
+                    sendMessage(poll.chat.chat_id,f"The player {player.user_name} got the correct answer! and got +1 point")
                     
+                    #ACTULIAZAR DATOS
                     poll.closed = True
                     poll.save(update_fields=['closed'])
                     
-                    if CheckIfGameEndedOrClosed(poll) == False:
+                    instance = TriviaGameInstance.objects.filter(chat=poll.chat.chat_id,player=player)[0]
+                    instance.points = str(int(instance.points) + 1)
+                    instance.save(update_fields=['points'])
+                    
+                    games = TriviaGame.objects.filter(id=instance.trivia.id)[0]
+                    games.answered_questions += 1
+                    games.save(update_fields=['answered_questions'])
+                    
+                    if CheckIfGameEndedOrClosed(poll):
+                        NextTrivia(poll)
+                    else:
                         sendMessage(poll.chat.chat_id,f"There are no more Quizes")
                         endGame(poll.chat)
-                    else:
-                        NextTrivia(poll)
                     
-                
-        else:
-            sendMessage(poll.chat.chat_id,f"This Game is already blocked, start a new game or reset")
-    else:
-        return None
-
+                else: #NO le achunto
+                    poll.vote_numbers = poll.vote_numbers + 1
+                    poll.save(update_fields=['vote_numbers'])
+                    intances = TriviaGameInstance.objects.filter(chat=poll.chat.chat_id)
+                    
+                    if int(poll.vote_numbers) == int(len(intances)):
+                        sendMessage(poll.chat.chat_id,"No more available players to answer")
+                        games = TriviaGame.objects.filter(chat=poll.chat.chat_id)[0]
+                        games.answered_questions = str(int(games.answered_questions) + 1)
+                        games.save(update_fields=['answered_questions'])
+                        
+                        poll.closed = True
+                        poll.save(update_fields=['closed'])
+                        
+                        if CheckIfGameEndedOrClosed(poll) == False:
+                            sendMessage(poll.chat.chat_id,f"There are no more Quizes")
+                            endGame(poll.chat)
+                        else:
+                            NextTrivia(poll)    
+            else:
+                sendMessage(poll.chat.chat_id,f"This Game is already blocked, start a new game or reset")
+        else: #Timer
+            if CheckIfGameEndedOrClosed(poll):
+                if poll.correct_option == option_id[0] and poll.closed == False: #Si le achunto
+                    #ASIGNAR PUNTOS AL GANADOR
+                    game_timer = 0 
+                    global timers_list
+                    for i in timers_list:
+                        x,y = i
+                        logger.info(x)
+                        logger.info(poll.poll_id)
+                        logger.info(y)
+                        if int(poll.poll_id) == int(x):
+                            game_timer = y
+                    logger.info(game_timer)
+                    points = int(100*((int(game_timer)-int(timer.time())))/30)
+                    pint = int(game_timer)-int(timer.time())
+                    logger.info(int(timer.time()))
+                    logger.info(points)
+                    logger.info(pint)
+                    player = Player.objects.filter(user_id=user_id)[0]
+                    sendMessage(poll.chat.chat_id,f"The player {player.user_name} got the correct answer! and got +{points} point")
+                    
+                    #ACTULIAZAR DATOS
+                    poll.closed = True
+                    poll.save(update_fields=['closed'])
+                    
+                    instance = TriviaGameInstance.objects.filter(chat=poll.chat.chat_id,player=player)[0]
+                    instance.points = str(int(instance.points) + points)
+                    instance.save(update_fields=['points'])
+                    
+                else: #NO le achunto
+                    poll.vote_numbers = poll.vote_numbers + 1
+                    poll.save(update_fields=['vote_numbers'])
+                    intances = TriviaGameInstance.objects.filter(chat=poll.chat.chat_id)
+                    
+                    if int(poll.vote_numbers) == int(len(intances)):
+                        sendMessage(poll.chat.chat_id,"No more available players to answer")
+                        sendMessage(poll.chat.chat_id,"Waiting for timer to end...")
+                        
 def newGameIfNotExists(chat):
     new_triviaGame = TriviaGame.objects.filter(chat=chat.chat_id)
     text = f"cantidad {len(new_triviaGame)}"
@@ -179,6 +249,37 @@ def NextTrivia(poll):
             request = sendClosingPoll(poll.chat.chat_id, question)
         poll = SavePoll(request, poll.chat, question)
         AssingPoll(poll.chat,poll)
+
+def NextTriviaTimer(poll_id):
+    poll = Poll.objects.filter(poll_id=poll_id)[0]
+    
+    poll.closed = True
+    poll.save(update_fields=['closed'])
+                
+    global timers_list
+    if int(len(timers_list)) >= 1:
+        games = TriviaGame.objects.filter(chat=poll.chat.chat_id)[0]
+        games.answered_questions += 1
+        games.save(update_fields=['answered_questions'])
+    
+    if CheckIfGameEndedOrClosed(poll):
+        sendMessage(poll.chat.chat_id,f"Next trivia timer!!")
+        triviaGame = TriviaGame.objects.filter(chat=poll.chat.chat_id)[0]
+        question_from_api = getRandomQuestion()
+        questions = parseAndSaveQuestions(question_from_api)
+        if questions != None and len(questions) > 0:
+            question = questions[0]
+            texto = f"Game {int(triviaGame.answered_questions)+1} out of {triviaGame.num_of_questions}"
+            sendMessage(poll.chat.chat_id,texto)
+            if triviaGame.game_mode == "F":
+                request = sendPoll(poll.chat.chat_id, question)
+            else:
+                request = sendClosingPoll(poll.chat.chat_id, question)
+            poll = SavePoll(request, poll.chat, question)
+            AssingPoll(poll.chat,poll)
+    elif CheckIfGameEndedOrClosed(poll) == False and int(len(timers_list)) >= 1:
+        sendMessage(poll.chat.chat_id,f"There are no more Quizes timer")
+        endGame(poll.chat)
 
 def StartOrResetGame(chat):
     question_from_api = getRandomQuestion()
@@ -283,7 +384,7 @@ def sendPoll(chat_id, question):
     request = requests.post(url, json=data)
     return request
 
-def sendClosingPoll(chat_id, question, time=60):
+def sendClosingPoll(chat_id, question, time=30):
     url = f'https://api.telegram.org/bot5668389701:AAHWwdNxz6fbX3lh4RfhSyuZvnHpOFHT9IQ/sendPoll'
 
     answer_list = [question.ans1, 
@@ -305,7 +406,8 @@ def sendClosingPoll(chat_id, question, time=60):
             'options':answer_list,
             'type':'quiz',
             'is_anonymous':False,
-            'open_period':time,
+            #'open_period':time,
+            'close_date': int(timer.time()) + time,
             'correct_option_id':correct_answer_id}
     request = requests.post(url, json=data)
     return request
@@ -318,17 +420,24 @@ def sendMessage(chat_id, text='bot response'):
     return request   
 
 def SavePoll(request, chat, question):
+    
     request_json = request.json()
     result = request_json.get('result')
 
     if result != None:
         poll_id = result.get('poll').get('id')
         correct_option = result.get('poll').get('correct_option_id')
+        time = result.get('poll').get('close_date')
         new_poll = Poll.objects.create(chat=chat,
                                     question=question,
                                     poll_id=poll_id,
-                                    correct_option=correct_option)
+                                    correct_option=correct_option,
+                                    time=time)
         new_poll.save()
+        global timers_list
+        timers_list.append([poll_id,time])
+        #th.start()
+        logger.info(len(timers_list))
         return new_poll
     return None
 

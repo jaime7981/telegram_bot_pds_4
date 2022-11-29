@@ -49,6 +49,7 @@ class Poll(models.Model):
     vote_numbers = models.IntegerField(default='0')
     closed = models.BooleanField(default=False)
     correct_option = models.IntegerField(default=0)
+    time = models.IntegerField(null=True, default=None)
 
 class TriviaGame(models.Model):
     GAME_STATES = (

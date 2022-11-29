@@ -82,6 +82,7 @@ def checkPlayerAnswer(poll, option_id, user_id):
                     NextTrivia(poll)
                 else:
                     sendMessage(poll.chat.chat_id,f"There are no more Quizes")
+                    endGame(poll.chat)
                 
             else: #NO le achunto
                 poll.vote_numbers = poll.vote_numbers + 1
@@ -99,6 +100,7 @@ def checkPlayerAnswer(poll, option_id, user_id):
                     
                     if CheckIfGameEndedOrClosed(poll) == False:
                         sendMessage(poll.chat.chat_id,f"There are no more Quizes")
+                        endGame(poll.chat)
                     else:
                         NextTrivia(poll)
                     
@@ -171,7 +173,10 @@ def NextTrivia(poll):
         question = questions[0]
         texto = f"Game {int(triviaGame.answered_questions)+1} out of {triviaGame.num_of_questions}"
         sendMessage(poll.chat.chat_id,texto)
-        request = sendPoll(poll.chat.chat_id, question)
+        if triviaGame.game_mode == "F":
+            request = sendPoll(poll.chat.chat_id, question)
+        else:
+            request = sendClosingPoll(poll.chat.chat_id, question)
         poll = SavePoll(request, poll.chat, question)
         AssingPoll(poll.chat,poll)
 
@@ -229,12 +234,12 @@ def UpdateGameParams(chat, value, command):
             else:
                 return "Number of games could not be changed"
         elif command == "set_game_mode":
-            if value == "First" or value == "F":
-                game.game_mode = value
+            if value.upper() == "FIRST" or value == "F":
+                game.game_mode = "F"
                 game.save(update_fields=['game_mode'])
                 return "Game mode was successfully updated to First"
-            elif value == "Time" or value == "T":
-                game.game_mode = value
+            elif value.upper() == "TIME" or value == "T":
+                game.game_mode = "T"
                 game.save(update_fields=['game_mode'])
                 return "Game mode was successfully updated to Time"
 
@@ -335,6 +340,40 @@ def AssingPoll(chat, poll):
         games.save(update_fields=['poll'])
     pass
 
+def endGame(chat):
+    winner_id = ""
+    biggest_points = 0
+    instance = TriviaGameInstance.objects.filter(chat=chat.chat_id)
+    
+    for player in instance:
+        if player.points > biggest_points:
+            biggest_points = player.points
+            winner_id = player.player.user_id
+    
+    #Se agregan los puntos
+    for addPoints in instance:
+        player_stats = Stats.objects.filter(player=addPoints.player, chat_id=chat.chat_id)
+        if int(len(player_stats)) >=1:
+            player_stat = player_stats[0]
+            if winner_id == player_stat.player.user_id:
+                player_stat.won = player_stat.won + 1
+                player_stat.save(update_fields=['won'])
+                sendMessage(chat.chat_id,f"The player {player_stat.player.user_name} won the game!")
+            elif biggest_points == 0:
+                sendMessage(chat.chat_id,f"There were no winners")
+            player_stat.played = player_stat.played + 1
+            player_stat.lost = player_stat.played - player_stat.won
+            player_stat.save(update_fields=['played', 'lost'])
+    #Se reinicia los puntos de las instancias
+    instance = TriviaGameInstance.objects.filter(chat=chat.chat_id)
+    
+    for player in instance:
+        player.points = 0
+        player.save(update_fields=['points'])
+        
+    
+    
+    
 def is_integer(n):
     try:
         float(n)

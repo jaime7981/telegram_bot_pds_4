@@ -173,12 +173,14 @@ def getPlayerAndChatOrCreate(json_request):
                                        chat_type=json_request.get('chat_type'),
                                        chat_title=json_request.get('chat_title'))
             chat.save()
-
+        stats = Stats.objects.filter(player=player, chat_id=json_request.get('chat_id'))
+        if int(len(stats)) < 1:
+            stats = Stats.objects.create(player=player, chat_id=json_request.get('chat_id'))
     else:
         player = Player.objects.create(user_id=json_request.get('sender_id'),
                                        user_name=json_request.get('sender_name'))
         player.save()
-        stats = Stats.objects.create(player=player,chat_id=json_request.get('chat_id'))
+        stats = Stats.objects.create(player=player, chat_id=json_request.get('chat_id'))
         stats.save()
         chat = Chat.objects.create(player=player,
                                        chat_id=json_request.get('chat_id'),
@@ -190,7 +192,7 @@ def getPlayerAndChatOrCreate(json_request):
 def get_stats(text, player, chat):
     #logger.info(text)
     if len(text) == 1:
-        player_stats = Stats.objects.filter(player=player.user_id)
+        player_stats = Stats.objects.filter(player=player.user_id,chat_id=chat.chat_id)
         if len(player_stats) >= 1:
             logger.info(player_stats[0].won)
             return f"The player {player.user_name} has played {player_stats[0].played} games, won {player_stats[0].won} games, and lost {player_stats[0].lost} games"

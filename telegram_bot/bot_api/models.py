@@ -16,6 +16,7 @@ class Stats(models.Model):
     played = models.IntegerField(default=0, null=True, blank=True)
     won = models.IntegerField(default=0, null=True, blank=True)
     lost = models.IntegerField(default=0, null=True, blank=True)
+    chat_id = models.IntegerField(null=True, default=None)
 
 class NumberGame(models.Model):
     GAME_STATES = (

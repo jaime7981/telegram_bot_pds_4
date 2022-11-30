@@ -42,10 +42,6 @@ def show_group_stats(request):
         request_data = (request.POST).dict()
         logger.info(request_data)
         group_id = request_data.get('group_id', 0)
-        if len(group_id) == 1:
-            group_id = group_id[0]
-        else:
-            return HttpResponseBadRequest()
         all_stats = Stats.objects.filter(chat_id=group_id).order_by('won')
         context = {'all_stats':all_stats, 'group_id': group_id}
         return(render(request, 'group_stats.html', context=context))

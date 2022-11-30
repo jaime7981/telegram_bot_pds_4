@@ -6,8 +6,8 @@
 <h1>View Group</h1>
 
 <form action="/show_group_stats/" method="post">
-  <label for="groups_id">Choose Group:</label>
-  <select id="groups_id" name="groups_id">
+  <label for="group_id">Choose Group:</label>
+  <select id="group_id" name="group_id">
     {% for group_id in groups_id %}
         <option value="{{ group_id }}">{{ group_id }}</option>
     {% endfor %}

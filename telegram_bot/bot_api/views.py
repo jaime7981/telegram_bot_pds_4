@@ -40,9 +40,13 @@ def root(request):
 def show_group_stats(request):
     if request.method == 'POST':
         logger.info(request.POST)
-        request_data = request.POST
+        request_data = (request.POST).dict()
         group_id = request_data.get('group_id', 0)
-        all_stats = Stats.objects.filter(group_id=group_id).order_by('won')
+        if len(group_id) == 1:
+            group_id = group_id[0]
+        else:
+            return HttpResponseBadRequest()
+        all_stats = Stats.objects.filter(chat_id=group_id).order_by('won')
         context = {'all_stats':all_stats, 'group_id': group_id}
         return(render(request, 'group_stats.html', context=context))
     else:

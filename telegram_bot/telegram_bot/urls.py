@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('test/', bot_views.test_page, name = 'test_page'),
     path('webhook/', bot_views.webhook, name = 'webhook'),
+    path('show_group_stats/', bot_views.show_group_stats, name = 'show_group_stats'),
     path('', bot_views.root, name='stats'),
 ]
 

@@ -26,8 +26,25 @@ def test_page(request):
 
 def root(request):
     all_stats = Stats.objects.all()
-    context = {'all_stats':all_stats}
+
+    groups_id = []
+
+    for stat in all_stats:
+        if stat.chat_id not in groups_id:
+            groups_id.append(stat.chat_id)
+
+    context = {'all_stats':all_stats, 'groups_id': groups_id}
     return(render(request, 'stats.html', context=context))
+
+def show_group_stats(request):
+    if request.method == 'POST':
+        request_data = json.loads(request.body)
+        group_id = request_data.get('group_id', 0)
+        all_stats = Stats.objects.filter(group_id=group_id)
+        context = {'all_stats':all_stats, 'group_id': group_id}
+        return(render(request, 'group_stats.html', context=context))
+    else:
+        return HttpResponseBadRequest()
 
 @csrf_exempt
 def webhook(request):

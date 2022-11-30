@@ -3,27 +3,13 @@
 {% load static %}
 {% block content %}
 
-<h1>View Group</h1>
-
-<form action="/show_group_stats/" method="post">
-  <label for="groups_id">Choose Group:</label>
-  <select id="groups_id" name="groups_id">
-    {% for group_id in groups_id %}
-        <option value="{{ group_id }}">{{ group_id }}</option>
-    {% endfor %}
-  </select>
-  <input type="submit" value="Go">
-</form>
-
-
-<h1>All Players Stats</h1>
+<h1>Group {{ group_id }} Stats</h1>
 
 {% if all_stats %}
     <div>
         {% for player_stat in all_stats %}
             <ul>
                 <li>Player: {{ player_stat.player.user_name }}</li>
-                <li>Chat/Group: {{ player_stat.chat_id }}</li>
                 <li>Played: {{ player_stat.played }}</li>
                 <li>Won: {{ player_stat.won }}</li>
                 <li>Lost: {{ player_stat.lost }}</li>

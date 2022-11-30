@@ -39,8 +39,8 @@ def root(request):
 @csrf_exempt
 def show_group_stats(request):
     if request.method == 'POST':
-        logger.info(request.POST)
         request_data = (request.POST).dict()
+        logger.info(request_data)
         group_id = request_data.get('group_id', 0)
         if len(group_id) == 1:
             group_id = group_id[0]

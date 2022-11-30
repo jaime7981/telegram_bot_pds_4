@@ -105,16 +105,17 @@ def GetWinner(chat: Chat):
 
         for instance in game_instances:
             if instance.player in winner:
-                UpdateStats(winner[0])
+                UpdateStats(winner[0],chat=chat)
             else:
-                UpdateStats(instance.player, False)
+                UpdateStats(instance.player, chat, False)
         return winner, max_points
 
-def UpdateStats(player, win=True):
+def UpdateStats(player, chat, win=True):
     try:
-        stats = Stats.objects.get(player=player)
+        
+        stats = Stats.objects.filter(player=player, chat_id=chat.chat_id)[0]
     except:
-        stats = Stats.objects.create(player=player)
+        stats = Stats.objects.create(player=player, chat_id=chat.chat_id)
         stats.save()
 
     if win:

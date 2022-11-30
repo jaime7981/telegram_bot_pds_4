@@ -25,7 +25,7 @@ def test_page(request):
     return(render(request, 'test.html', context=context))
 
 def root(request):
-    all_stats = Stats.objects.all().order_by('won')
+    all_stats = Stats.objects.all().order_by('-won')
 
     groups_id = []
 
@@ -42,7 +42,7 @@ def show_group_stats(request):
         request_data = (request.POST).dict()
         logger.info(request_data)
         group_id = request_data.get('group_id', 0)
-        all_stats = Stats.objects.filter(chat_id=group_id).order_by('won')
+        all_stats = Stats.objects.filter(chat_id=group_id).order_by('-won')
         context = {'all_stats':all_stats, 'group_id': group_id}
         return(render(request, 'group_stats.html', context=context))
     else:

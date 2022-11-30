@@ -39,7 +39,8 @@ def root(request):
 @csrf_exempt
 def show_group_stats(request):
     if request.method == 'POST':
-        request_data = json.loads(request.body)
+        logger.info(request.POST)
+        request_data = request.POST
         group_id = request_data.get('group_id', 0)
         all_stats = Stats.objects.filter(group_id=group_id).order_by('won')
         context = {'all_stats':all_stats, 'group_id': group_id}

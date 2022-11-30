@@ -16,6 +16,7 @@ class Stats(models.Model):
     played = models.IntegerField(default=0, null=True, blank=True)
     won = models.IntegerField(default=0, null=True, blank=True)
     lost = models.IntegerField(default=0, null=True, blank=True)
+    chat_id = models.IntegerField(null=True, default=None)
 
 class NumberGame(models.Model):
     GAME_STATES = (
@@ -25,6 +26,7 @@ class NumberGame(models.Model):
 
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    chat_id_int = models.IntegerField(null=True, default=None)
     game_state = models.CharField(default='W', max_length=1, choices=GAME_STATES)
     attempts = models.IntegerField(default=0, null=True, blank=True)
 
@@ -48,6 +50,7 @@ class Poll(models.Model):
     vote_numbers = models.IntegerField(default='0')
     closed = models.BooleanField(default=False)
     correct_option = models.IntegerField(default=0)
+    time = models.IntegerField(null=True, default=None)
 
 class TriviaGame(models.Model):
     GAME_STATES = (

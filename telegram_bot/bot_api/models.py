@@ -26,6 +26,7 @@ class NumberGame(models.Model):
 
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    chat_id_int = models.IntegerField(null=True, default=None)
     game_state = models.CharField(default='W', max_length=1, choices=GAME_STATES)
     attempts = models.IntegerField(default=0, null=True, blank=True)
 

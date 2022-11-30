@@ -5,12 +5,13 @@ from bot_api.models import Chat, NumberGame, Stats
 
 def play_number(text, chat, player):
     # Manage Text Parameters
+    newGameIfNotExists(chat)
     if len(text) == 2:
         parameter = text[1]
         number = int(parameter) if parameter.isdigit() else None
 
         if number != None:
-            number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+            number_game = NumberGame.objects.filter(player=chat.player).filter(chat_id_int=chat.chat_id)
             if len(number_game) >= 1:
                 number_game = number_game[0]
                 answer = number_game.answer
@@ -19,7 +20,7 @@ def play_number(text, chat, player):
                 else:
                     return 'No answer is set for this game, try the start command'
             else:
-                number_game = NumberGame.objects.filter(chat=chat)
+                number_game = NumberGame.objects.filter(chat_id_int=chat.chat_id)
                 answer = None
                 if len(number_game) >= 1:
                     number_game = number_game[0]
@@ -27,7 +28,8 @@ def play_number(text, chat, player):
                 if answer != None:
                     new_game = NumberGame.objects.create(player=player,
                                                          chat=chat,
-                                                         answer=answer)
+                                                         answer=answer,
+                                                         chat_id_int=chat.chat_id)
                     new_game.save()
                     return MainGame(new_game, answer, number, chat)
                 else:
@@ -74,7 +76,7 @@ Commands:\n\
 def CreateOrResetNumberGame(chat):
     # Todas las instancias de player en chat
     chats = Chat.objects.filter(chat_id=chat.chat_id)
-    number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+    number_game = NumberGame.objects.filter(player=chat.player).filter(chat_id_int=chat.chat_id)
 
     # modified rules to be implemented
     max_answer = 100
@@ -85,7 +87,7 @@ def CreateOrResetNumberGame(chat):
         answer = randint(1, number_game.rule_highest)
 
     for chat in chats:
-        number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+        number_game = NumberGame.objects.filter(player=chat.player).filter(chat_id_int=chat.chat_id)
         if len(number_game) >= 1:
             number_game = number_game[0]
             number_game.game_state = 'W'
@@ -97,7 +99,8 @@ def CreateOrResetNumberGame(chat):
         else:
             number_game = NumberGame.objects.create(player=chat.player,
                                                     chat=chat,
-                                                    answer=answer)
+                                                    answer=answer,
+                                                    chat_id_int=chat.chat_id)
             number_game.save()
 
 # Funcion para comenzar o resetear juego
@@ -106,7 +109,7 @@ def SetRulesInNumberGame(chat, max_answer=None, max_attempts=None):
     chats = Chat.objects.filter(chat_id=chat.chat_id)
 
     for chat in chats:
-        number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+        number_game = NumberGame.objects.filter(player=chat.player).filter(chat_id_int=chat.chat_id)
         if len(number_game) >= 1:
             number_game = number_game[0]
             if max_attempts != None:
@@ -119,22 +122,31 @@ def SetRulesInNumberGame(chat, max_answer=None, max_attempts=None):
             if max_attempts != None:
                 number_game = NumberGame.objects.create(player=chat.player,
                                                         chat=chat,
-                                                        rule_attempts=max_attempts)
+                                                        rule_attempts=max_attempts,
+                                                        chat_id_int=chat.chat_id)
             elif max_answer != None:
                 number_game = NumberGame.objects.create(player=chat.player,
                                                         chat=chat,
-                                                        rule_highest=max_answer)
+                                                        rule_highest=max_answer,
+                                                        chat_id_int=chat.chat_id)
             else:
                 number_game = NumberGame.objects.create(player=chat.player,
-                                                        chat=chat)
+                                                        chat=chat,
+                                                        chat_id_int=chat.chat_id)
             number_game.save()
+
+def newGameIfNotExists(chat):
+    new_numberGame = NumberGame.objects.filter(chat_id_int=chat.chat_id)
+    if int(len(new_numberGame)) < 1:
+        new_game = NumberGame.objects.create(player=chat.player,chat=chat, chat_id_int=chat.chat_id)
+        new_game.save()
 
 def GetNumberGameParams(chat):
     # Todas las instancias de player en chat
     chats = Chat.objects.filter(chat_id=chat.chat_id)
 
     for chat in chats:
-        number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+        number_game = NumberGame.objects.filter(player=chat.player).filter(chat_id_int=chat.chat_id)
         if len(number_game) >= 1:
             number_game = number_game[0]
             return  f'Attempts: {number_game.rule_attempts}\nMax Number: {number_game.rule_highest}'
@@ -178,24 +190,25 @@ def UpdateOnCorrectAnswer(winner_game, chat):
     # Todas las instancias de player en chat
     chats = Chat.objects.filter(chat_id=chat.chat_id)
 
-    stats = Stats.objects.get(player=winner_game.player)
+    stats = Stats.objects.filter(player=winner_game.player,chat_id=chat.chat_id)[0]
     stats.won = stats.won + 1
     stats.save(update_fields=['won'])
 
     for chat in chats:
-        number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+        number_game = NumberGame.objects.filter(player=chat.player).filter(chat_id_int=chat.chat_id)
         if len(number_game) >= 1:
             number_game = number_game[0]
             number_game.game_state = 'B'
             number_game.save(update_fields=['game_state'])
 
-            stats = Stats.objects.get(player=number_game.player)
+            stats = Stats.objects.filter(player=number_game.player,chat_id=chat.chat_id)[0]
             stats.played = stats.played + 1
             stats.lost = stats.played - stats.won
             stats.save(update_fields=['played', 'lost'])
         else:
             number_game = NumberGame.objects.create(player=chat.player,
-                                                    chat=chat)
+                                                    chat=chat,
+                                                    chat_id_int=chat.chat_id)
             number_game.save()
 
 def EndGame(chat):
@@ -203,18 +216,19 @@ def EndGame(chat):
     chats = Chat.objects.filter(chat_id=chat.chat_id)
 
     for chat in chats:
-        number_game = NumberGame.objects.filter(player=chat.player).filter(chat=chat)
+        number_game = NumberGame.objects.filter(player=chat.player).filter(chat_id_int=chat.chat_id)
         if len(number_game) >= 1:
             number_game = number_game[0]
             number_game.game_state = 'B'
             number_game.save(update_fields=['game_state'])
 
-            stats = Stats.objects.get(player=number_game.player)
+            stats = Stats.objects.filter(player=number_game.player,chat_id=chat.chat_id)[0]
             stats.played = stats.played + 1
             stats.lost = stats.played - stats.won
             stats.save(update_fields=['played', 'lost'])
         else:
             number_game = NumberGame.objects.create(player=chat.player,
                                                     chat=chat,
-                                                    game_state = 'B')
+                                                    game_state = 'B',
+                                                    chat_id_int=chat.chat_id)
             number_game.save()

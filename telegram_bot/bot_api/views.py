@@ -25,7 +25,7 @@ def test_page(request):
     return(render(request, 'test.html', context=context))
 
 def root(request):
-    all_stats = Stats.objects.all()
+    all_stats = Stats.objects.all().order_by('won')
 
     groups_id = []
 
@@ -40,7 +40,7 @@ def show_group_stats(request):
     if request.method == 'POST':
         request_data = json.loads(request.body)
         group_id = request_data.get('group_id', 0)
-        all_stats = Stats.objects.filter(group_id=group_id)
+        all_stats = Stats.objects.filter(group_id=group_id).order_by('won')
         context = {'all_stats':all_stats, 'group_id': group_id}
         return(render(request, 'group_stats.html', context=context))
     else:

@@ -36,6 +36,7 @@ def root(request):
     context = {'all_stats':all_stats, 'groups_id': groups_id}
     return(render(request, 'stats.html', context=context))
 
+@csrf_exempt
 def show_group_stats(request):
     if request.method == 'POST':
         request_data = json.loads(request.body)
